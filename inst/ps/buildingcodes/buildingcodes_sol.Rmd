@@ -1,0 +1,2280 @@
+# Are Building Codes Effective at Saving Energy?
+
+#< ignore
+```{r "crete_ps"}
+library(restorepoint)
+# facilitates error detection
+#restore.point.options(display.restore.point=TRUE)
+
+library(RTutor)
+library(yaml)
+library(stargazer)
+#library(restorepoint)
+setwd("C:/Users/Kaizen/Dropbox/Uni Ulm/Bachelor/Simon/Florida/Replizierung/ps")
+ps.name = "buildingcodes"; sol.file = paste0(ps.name,"_sol.Rmd")
+libs = c("ggplot2","dplyr","foreign","gridExtra","regtools","foreign","lfe","faraway","lmtest","googleVis","tidyr") # character vector of all packages you load in the problem set
+#name.rmd.chunks(sol.file) # set auto chunk names in this file
+create.ps(sol.file=sol.file, ps.name=ps.name, user.name=NULL,libs=libs, stop.when.finished=FALSE,var.txt.file = "variables.txt",addons="quiz",use.memoise = FALSE)
+show.shiny.ps(ps.name, load.sav=FALSE,  sample.solution=FALSE, is.solved=FALSE, catch.errors=TRUE, launch.browser=TRUE)
+stop.without.error()
+```
+#>
+
+
+Welcome to this interactive problem set which is part of my bachelor thesis at the University of Ulm. It analyzes if building codes are effective in promoting energy efficiency. This problem set is developed upon the paper
+**"Are Building Codes Effective at Saving Energy? Evidence from Residential Billing Data in
+Florida"**, written by Grant D. Jacobsen and Matthew J. Kotchen, published in 2013 in the Review of Economics and Statistics Volume 95 Issue 1 (Pages: 34-49) to which I will refer by JK during this problem set.
+
+You can download the working paper from <a href="http://www.nber.org/papers/w16194" target = "_blank">nber.org</a> to get more detailed information. The Stata code can be downloaded from <a href="https://dataverse.harvard.edu/dataset.xhtml?persistentId=hdl:1902.1/20533" target = "_blank">dataverse.harvard.edu</a>
+
+You do not have to solve the exercises of this problem set in the given order, but it is recommended to do so as the problem set is structured in a logical way. All later exercises require knowledge of the functions you will use in the earlier exercises.
+
+Within each chapter you will be presented with multiple tasks you need to solve. Some additional tasks like quizzes for example do not need to be solved as they are all optional.
+
+How the problem set works will be explained in the first task. If you want to solve the problem set on your computer you can find a tutorial on how to install RTutor and run the problem set locally on <a href="https://github.com/skranz/RTutor" target = "_blank">github.com/skranz/RTutor</a>.
+
+
+
+## Exercise Content
+
+The paper touches on the field of environmental economics as it studies empirically the local environmental policies and includes the costs and benefits of the new energy building code policy.
+
+Energy building codes play a very important role when it comes to the energy efficiency of new constructions. Buildings account for about 40% of the total energy use in the United States (U.S. Energy Information Administration, 2016). This makes clear why the regulation of more stringent energy building codes on a federal level are of interest.
+
+The problem set has the following structure:
+
+  1. Overview of the data set structure
+  
+  2. Exploring the Gainesville data
+  
+  3. Examine energy consumption with data visualization
+  
+  4. Explaining the consumption of electricity
+  
+  4.1 Summary Statistics
+  
+  4.2 Linear Regressions
+  
+  5. Regressions from the Paper
+  
+  6. Conclusion
+  
+  7. References
+
+
+## Exercise 1 -- Overview of the data set structure
+
+In this problem set we are going to analyze how effective building codes are in promoting energy efficiency. This chapter will give you a brief overview about the data used in the paper. The study takes place in Gainesville, Florida and the authors (JK) used billing data on electricity and natural gas for residential buildings, which is combined with appraiser data for a set of observable characteristics.
+
+In order to get a better understanding about the data and the problem at hand we will start using our first data set `gg_new.dta` which contains billing data for each observed house and year in Gainesville. Let us load our first data set. To do so we want to use the function `read.dta()` out of the `foreign` package.
+
+#< info "read.dta()"
+The command `read.dta()` from the `foreign` package reads a file e.g. `data.dta` (Stata version 5-12) into a data frame.
+
+If you set the working directory correctly and save the data in it, it will suffice to use the name of the data file.
+```{r "1_",eval=FALSE}
+library(foreign)
+read.dta("data.dta")
+```
+
+You can also specify the full path where the file is located in case you did not store the data in your working directory:
+```{r "1__2",eval=FALSE}
+library(foreign)
+read.dta("C:/mypath/data.dta")
+```
+
+To store your results in the variable `mydata` proceed as follows:
+```{r "1__3",eval=FALSE}
+library(foreign)
+mydata = read.dta("data.dta")
+```
+
+In case you want to know more about the `read.dta()` command you can take a look at <a href="https://stat.ethz.ch/R-manual/R-devel/library/foreign/html/read.dta.html" target = "_blank"> stat.ethz.ch/R-manual/R-devel/library/foreign/html/read.dta.html</a>.
+
+#>
+
+Since this is your first task, the basic structure of the command is already given. Before you start entering your code, you may need to press the `edit` button. This needs to be done in every first task of each exercise.
+
+*Note:* You can assign values in R with `<-` or `=` to a variable, but in this problem set we will stick to the usage of `=`.
+
+**Task:** Use the command `read.dta()` to read in the data set `gg_new.dta`. Store it into the variable `data`. If you need help on how to use `read.dta()`, check the info box above. When you are done, click the `check` button.  
+
+If you need further advice, just click the `hint` button, which contains more detailed information on how to solve this task. If the hint does not help, you can always look at the solution with the `solution` button. Here you just need to uncomment the code (remove the `#`) and replace the `...` with the right commands.
+
+
+```{r "1__4"}
+#< task
+library(foreign)
+# ... = read.dta("...")
+#>
+data = read.dta("gg_new.dta")
+#< hint
+display("Just type: data = read.dta(\"gg_new.dta\") and press check afterwards.")
+#>
+```                                            
+
+*Note:* The original data set from the paper was shortened. All of the dummy variables have been excluded for reasons of clarity and comprehensibility.
+
+#< award "Starter"
+  Good job! Welcome to this problem set. I hope you will enjoy solving it. 
+  During the problem set you will earn more awards for tasks or quizzes.
+#>
+
+You might be familiar with objects and data types in R and probably noticed that we created a data frame called `data` by loading the dta-file in the last task. Data frames are frequently used objects in R next to vectors, lists, matrices and arrays.
+
+A data frame is a tabular data object and unlike a matrix each column can contain of different data types. This means e.g. that the first column can be numeric, the second column can be logical while the third column can be a character. A data frame is basically a list of vectors of equal length.
+
+In the next task we want to look at the attributes of our object `data`.
+
+**Task:** Use the command `class()` to find out what class attribute `data` has. Also, use the function `str()` to take a look at the structure of the object `data`.
+
+```{r "1__5"}
+#< task
+#this will return the class attribute of the object
+class(data)
+
+#this will return the structure of the R object
+str(data)
+#>
+#< hint
+display("In this task you just need to press the check button to solve it.")
+#>
+```    
+
+The call of the function class confirmed, that the object `data` is a data frame. You can see that the function `str()` returns a lot of information about the object e.g. it lists all variables and their data types. int stands for integer and num is a numeric variable.
+
+If you want to know more about the `class()` or `str()` function you can take a look at <a href="https://stat.ethz.ch/R-manual/R-devel/library/base/html/class.html" target = "_blank"> Object Classes</a> or <a href="https://stat.ethz.ch/R-manual/R-patched/library/utils/html/str.html" target = "_blank"> Compactly Display the Structure of an Arbitrary R Object</a>.
+
+
+#< info "head()"
+The function `head()` returns the first parts of any vector, matrix, data frame or function. You could use the function `head()` to return the first rows of the data frame `df`
+
+```{r "1__6",eval=FALSE}
+head(df)
+```
+
+The function returns by default the first 6 rows of your object. You can however set the number of rows you want to return with the argument `n = ...`. If you want to print 12 rows, you would use
+
+```{r "1__7",eval=FALSE}
+head(df, n = 12)
+
+#you do not necessarily have to use the name of the second argument since in R arguments are matched in the following order exact name (perfect matching), prefix matching and by position the next row would give you the same output
+head(df,12)
+```
+
+If you wanted to return the last parts of the data frame you could use the opposite of the `head()` function, which would be `tails()`
+
+```{r "1___8",eval=FALSE}
+tails(df)
+```
+
+If you want to know more about the `head()` or `tails()` function you can take a look at <a href="https://stat.ethz.ch/R-manual/R-devel/library/utils/html/head.html" target = "_blank"> stat.ethz.ch/R-manual/R-devel/library/utils/html/head.html</a>.
+#>
+
+**Task:** Use the command `head()` to display the first rows of the data stored in the variable `data`. If you need help on how to use `head()`, check the info box above. When you are done, click the `check` button.
+
+If you can't solve this task just remember to use the `hint` or the `solution` button to get help.
+
+```{r "1__9"}
+#< task
+#head(...)
+#>
+head(data)
+#< hint
+display("Just remove the # in front of head(...) and replace the ... with the right object name and  press check afterwards.")
+#>
+```    
+
+Just hover over the variable names and you will see a description that explains each variable. If you want to explore the data set further, you can always click on the data button above the task to take a closer look at the data you are working with. This will redirect you to the `Data Explorer`.
+
+You might have noticed that the head() function we used in this task only returned the data for one particular house with the `home_id` 127826, because there are multiple years and months of billing data for each house observed.
+
+
+#< info "sample_n()"
+The function `sample_n()` from the `dplyr` package comes in handy if you just want to randomly return some data for a specified number of rows. You could use the function `sample_n()` to return 10 randomly chosen rows of the data frame `df`
+
+```{r "1__10",eval=FALSE}
+library(dplyr)
+sample_n(df,10)
+```
+
+If you want to return a fraction of randomly chosen rows, you could also use the function `sample_frac()`. In the example below we want to randomly return 10% of the whole data set.
+
+```{r "1__11",eval=FALSE}
+library(dplyr)
+sample_frac(df,0.1)
+```
+
+If you want to know more about the functions `sample_n()`, `sample_frac()` or the `dplyr` package in general you can take a look at extensive <a href="https://cran.rstudio.com/web/packages/dplyr/vignettes/introduction.html" target = "_blank"> Introduction to dplyr</a>.
+
+#>
+
+**Task:** Use the command `sample_n()` to return 10 randomly chosen rows of the data set `data`. 
+Here you just need to uncomment the code (remove the `#`) and replace the `...` with the right commands.
+
+```{r "1__12"}
+#< task
+#load the dplyr package
+library(dplyr)
+
+#sample_n(...,10)
+#>
+sample_n(data,10)
+#< hint
+display("Just type sample_n(data,10) and press check afterwards.")
+#>
+```   
+
+#< award "Explorer"
+  Good job! You are exploring the data set. To get even a better understanding of the data at hand you can always click on the `Data Explorer` tab on the top.
+#>
+
+Now you can see 10 randomly selected rows of the data set with a total of 64,471 observations. This sample should give you a good idea on how the data is structured.
+
+You can see that three categorical variables are used, namely `centralair`, `shingled` and `x2001code` which are used to assign each observation to a particular group. In this case a value of 1 represents a house with central air-conditioning, a shingled roof or the new building code.
+
+Both functions `head()` and `sample_n()` gives at best just an idea on how the data is stored in our data frame. To get a better understanding of how the variables are distributed you can use the `summary()` function.
+
+`summary()` returns the mean, median, quartiles and the range for numerical variables. For factor variables it gives you a table with frequencies for every factor.
+
+
+**Task:** Use the command `summary()` to obtain the summary for the `data` object.
+
+
+```{r "1_13"}
+#< task
+summary(data)
+#>
+
+#< hint
+display("Just press check")
+#>
+```   
+You can see the summary for every variable and it gives you a better picture about the distribution of the data, but as you might noticed some values seem odd. This is because some variables like `zip` or `effectiveyearbuilt` for example don't deliver us a whole lot of useful information. 
+
+If you remember the output of the `str()` command, then you probably can guess that it has to do with the data type of the variable. If you take a look at the output again you can see that some of the variables are of the data type integer or numerical that might should be considered as a factor variable.
+
+The next task is completely  optional. In this task we want to convert some columns of the data frame into factors.
+
+#< info "lapply()"
+The command `lapply()` can be used to apply a function to a list or vector. The first argument of the command is the object you want to apply the function to. The second argument `FUN` specifies the function.
+
+```{r "1__14",eval=FALSE}
+#this call of the function lapply would calculate the means of the object x
+lapply(x,mean)
+```
+
+If you want to convert the data type for multiple variables inside a data frame you could use the following call of the function
+
+```{r "1__15",eval=FALSE}
+#saving the variable names as a variable named columns
+columns = c("A","B","C")
+
+#this will convert the columns to factors and store it in the data frame df
+df[columns] = lapply(df[columns], factor)
+```
+
+If you want to know more about the function `lapply()`, you can take a look at <a href="https://stat.ethz.ch/R-manual/R-devel/library/base/html/lapply.html" target = "_blank"> R documentation of lapply</a>.
+
+#>
+
+**Task:** Just take a look at the code and try to understand it. To solve this task you just need to press the check button.
+
+
+```{r "1__16", optional=TRUE}
+#< task
+#saving the variables we want to convert as a variable called var
+var <- c("year", "month", "beds", "baths","stories","centralair","shingled","zip","effectiveyearbuilt","x2001code")
+
+#applying the function factor to the columns of the data frame data
+data[var] = lapply(data[var], factor)
+
+#check the class of each column of our data frame data
+sapply(data, class)
+
+#returning the summary output again
+summary(data)
+#>
+
+#< hint
+display("Just press the check button to solve this task")
+#>
+```   
+
+Comparing the summary output to the previous one looks like we fixed the problem and the factor variables are easier to interpret. Now you can see the frequency for every level of each factor variable, but keep in mind that our data set included multiple observations per house namely 64,471 monthly observations. To interpret the numbers for the factor variables we would need to collapse the data so that we are left with one observation per house. We will do this in later exercises.
+
+If you took a close look at the summary for the variable `effectiveyearbuilt` you can see that the variable has factor levels from year 1999 through 2005, but the year 2002 is missing. The reason is that the energy building code from 2001 was first implemented on March 1, 2002 so houses with an EYB of 2002 are designated as intermediate residences and therefore have been dropped from the data set by the authors.
+
+One reason for this approach is because Florida's energy codes is naturally enforced when the building permits are issued and not when the final inspection (represented by EYB) takes place.
+
+The `effectiveyearbuilt` (EYB) of 1998 or earlier have been dropped too because of a previous code change in November of the year 1997.
+
+Now that we have got a brief overview of the data, we want to dive deeper and explore the Gainesville data in the next exercise.
+
+
+## Exercise 2 -- Exploring the Gainesville data
+
+Now that we got a brief understanding of the data at hand, we want to work with our data set.
+
+**Task:** Read the data `gg_new.dta` as you have done in the first exercise and store the data as `data`
+
+```{r "2_"}
+#< task
+#loading the foreign package
+library(foreign)
+
+# Enter your command here
+#>
+data = read.dta("gg_new.dta")
+#< hint
+display("Just type data = read.dta(\"gg_new.dta\") and press check afterwards.")
+#>
+```
+
+#< info "filter()"
+The function `filter()` from the `dplyr` package can be used to subset a data frame. The first argument is the data frame you want to filter and all subsequent arguments can be used to filter the data frame.
+
+Assuming the data frame `df` has the variables `month`and `year`you could use the function as following.
+
+```{r "2__2",eval=FALSE}
+library(dplyr)
+filter(df,year == 2012)
+```
+
+The first command would select all data from the year 2012. Whereas the next command would select all the data from January 2012 by typing:
+
+```{r "2__3",eval=FALSE}
+library(dplyr)
+filter(df,year == 2012, month == 1)
+```
+
+You can also use Boolean operators to filter data:
+
+```{r "2__4",eval=FALSE}
+library(dplyr)
+#filter data from January and the year 2012, which returns the same result as the previous code example
+filter(df,year == 2012 & month == 1)
+
+#filtering data from January or February
+filter(df,month == 1 | month == 2)
+```
+
+If you want to know more about the function `filter()` or the `dplyr` package in general, you can take a look at extensive <a href="https://cran.rstudio.com/web/packages/dplyr/vignettes/introduction.html" target = "_blank"> Introduction to dplyr</a>.
+
+#>
+JK selected residences from the data set based on the criteria of having 12 months of electric service in 2006 and the meter matching a single building on its parcel.
+
+In the next tasks we want to work with the billing data from the year 2006.
+
+**Task:** Use the `filter()` function to select all billing data within the year 2006 from the data frame `data` and store it in the data frame `data1`. 
+
+```{r "2__5"}
+#< task
+#load the library dplyr
+library(dplyr)
+
+# ... = filter(...,year == ...)
+#>
+data1 = filter(data,year == 2006)
+#< hint
+display("Check the info box, which explains the filter function above")
+#>
+#< task
+
+#next line will return 10 randomly selected rows from the data frame
+sample_n(data1,10)
+#>
+
+```    
+
+You can somewhat infer from the 10 randomly selected rows that we should only have billing data from the year 2006 now. If you want to take a look at the whole data set, you can always click on the data button to check the data frame `data1`.
+
+#< info "group_by()"
+The function `group_by()` from the `dplyr` package can be used to group data. The first argument is the data frame you want to use whereas the subsequent arguments are the variables that classify all observations into different clusters. In the example the students are classified by their gender.
+
+Assume that the data frame `students` has the variables `gender`, `student_name` and `act_score`. If you wanted to group the data by `gender` you would use the following command: 
+
+
+```{r "2__6",eval=FALSE}
+library(dplyr)
+students_grouped = group_by(students, gender)
+```
+
+If you want to know more about the function `group_by()` or the `dplyr` package in general you can take a look at extensive <a href="https://cran.rstudio.com/web/packages/dplyr/vignettes/introduction.html" target = "_blank"> Introduction to dplyr</a>.
+
+#>
+
+The next task is important as we want to create a data set of one observation per house. We will summarize the data in the task after this one to calculate means for every variable, but we need to specify grouping variables first. Grouping variables will tell R on what variable the data set will be collapsed when using the `summarize_each()` function for example.  
+
+
+**Task:** Use the `group_by()` function to group the billing data from the data frame `data1` by the variables `home_id`, `x2001code`, `effectiveyearbuilt` and store it into `data1b`. 
+
+```{r "2__7"}
+#< task
+# data1b = group_by(...,home_id,...,effectiveyearbuilt)
+#>
+data1b = group_by(data1,home_id,x2001code,effectiveyearbuilt)
+#< hint
+display("Check the info box for the group_by function")
+#>
+```    
+
+#< info "summarize_each()"
+The function `summarize_each()` or `summarise_each()` from the `dplyr` package can be used to collapse data and apply a specified function to each cluster. The first argument is the data frame you want to use whereas the subsequent arguments are the variables you want to apply the functions to.
+
+Let's use the data frame `students` with the variables `gender`, `student_name` and `act_score` as an example again. We could collapse the data and calculate the `mean` ACT score for each cluster (gender) with the command:
+
+
+```{r "2__8",eval=FALSE}
+library(dplyr)
+summarize_each(students_grouped, funs(mean), act_score)
+```
+
+If you want to know more about the function `summarize_each()` or the `dplyr` package in general you can take a look at the extensive <a href="https://cran.rstudio.com/web/packages/dplyr/vignettes/introduction.html" target = "_blank"> Introduction to dplyr</a>.
+#>
+
+**Task:** Use the `summarize_each()` function to collapse the billing data in the data frame `data1b` and store it in the data frame `sum1`. Apply the function `mean` to the following variables:
+
+`elec`, `gas`, `baths`, `beds`, `stories`, `squarefeet`, `centralair`, `shingled`
+
+
+```{r "2__9"}
+#< task
+#sum1 = summarize_each(data1b,funs(mean), elec, gas, ..., beds, stories, ..., centralair, shingled)
+#>
+sum1 = summarize_each(data1b,funs(mean), elec, gas, baths, beds, stories, squarefeet, centralair, shingled)
+
+#< hint
+display("Check the info box for the summarize_each function")
+#>
+#< task
+#next line will return the first 10 rows of the data frame
+head(sum1,10)
+#>
+
+```    
+
+You can see that now we obtained one observation for each residence with a yearly mean of the two variables of interest `elec` and `gas` for the year of 2006.
+
+#< info "Simplifying R code with the pipe operator"
+The pipe operator in R comes with a very handy R package called `magrittr` and really helps in terms of making R code simpler. If you have nested functions in a sequence you can either call those functions step by step or use a streamlined pipeline of operations to do it all at once. This sequence is often called chaining. Pipes basically take the output of a function and feed it as an argument to the following function.
+
+*Note:* The `magrittr` package is also imported with the `dplyr` package
+
+Let's use the aforementioned data frame `students` again and put the `group_by` and the `summarize_each` function into a code with the pipe operator which looks like this: `%>%` 
+
+
+```{r "2__10",eval=FALSE}
+library(magrittr)
+students %>%
+  group_by(gender) %>% 
+  summarize_each(funs(mean), act_score)
+```
+
+To recap we have collapsed the data again and calculated the mean ACT score for each cluster, which in this case is the gender. Notice that every call of the pipe operator `%>%` calls a new function on the returned values of the last operation.
+
+If you want to know more about the pipe operator `%>%` or the `magrittr` package in general you can take a look at <a href="https://cran.r-project.org/web/packages/magrittr/vignettes/magrittr.html" target = "_blank">cran.r-project.org/web/packages/magrittr/vignettes/magrittr.html</a>.
+
+#>
+
+**Task:** This task just tries to show you how to solve the last three tasks with the pipe operator. The results are stored in the new data frame `data2`. In this task you just need to hit the check button.
+
+```{r "2__11"}
+#< task
+#loading the dplyr library automatically imports the magrittr package
+library(dplyr)
+
+data2 = data %>%
+  filter(year == 2006) %>% 
+  group_by(home_id, x2001code, effectiveyearbuilt) %>% 
+  summarize_each(funs(mean), elec, gas, baths, beds, stories, squarefeet, centralair, shingled)
+
+#next line will return the first 10 rows the data frame
+head(data2,10)
+#>
+
+#< hint
+display("You just need to press check. If you want to learn how to use the pipe operator take a look at the info box.")
+#>
+```    
+
+You can probably guess from this simple example how much simpler chaining makes the call of  multiple functions.
+
+#< info "identical"
+The function `identical` can be used to test two objects for being exactly equal. The function will return a Boolean value for every case.
+
+To test the two data frames `df1` and `df2` we would type:
+
+```{r "2__12",eval=FALSE}
+indentical(df1, df2)
+```
+
+
+If you want to know more about the `identical` function, you can take a look at the <a href="http://stat.ethz.ch/R-manual/R-devel/library/base/html/identical.html" target = "_blank">R Documentation</a> page.
+
+#>
+
+**Task:** In this task we want to make sure that both obtained data frames are equal. Compare `sum1` with the data set we just obtained with the chaining command to see if they are identical.
+
+Use the function `identical()` to test if `sum1` and `data2` are identical.
+
+```{r "2__13", optional=TRUE}
+#< task
+#identical(sum1,...)
+#>
+identical(sum1,data2)
+#< hint
+display("Just uncomment the line and replace ... with the correct expression then hit the check button to solve this task")
+#>
+```    
+
+The function returned `TRUE` which means that both data frames are exactly equal.
+
+#< info "n_distinct"
+The function `n_distinct` from the `dplyr` package can be used to return a count of unique observations from a data frame `data`. Further specifying the option `na.rm = TRUE` ensures that missing values don't count.
+
+```{r "2__14",eval=FALSE}
+library(dplyr)
+n_distinct(data, na.rm = TRUE)
+```
+
+
+If you want to know more about the `n_distinct` function or the `dplyr` package in general, you can take a look at the <a href="https://cran.rstudio.com/web/packages/dplyr/vignettes/introduction.html" target = "_blank">Introduction to dplyr</a> page again.
+
+#>
+
+**Task:** Use the `n_distinct` function from the `dplyr` package to count the unique number of observed houses in 2006 from the data frame `sum1`. Use the argument `na.rm = TRUE` to make sure that observations with missing values are not being counted.
+
+```{r "2__15"}
+#< task
+#n_distinct(...,na.rm = TRUE)
+#>
+n_distinct(sum1,na.rm = TRUE)
+#< hint
+display("Check the info box for help on how to use the n_distinct function")
+#>
+```    
+
+The collapsed data leaves us with a total of 2239 unique houses observed in the year of 2006. In the following task we want to find out how many houses were built under which code regime.
+
+
+**Task:** Use the `n_distinct` function in combination with the `filter()` function to find out the number of observed houses that were built under the new energy code regime in the data frame `sum1`. 
+Remember that houses built under the new code regime can be identified by the variable `x2001code` if its value is equal to 1.
+
+```{r "2__16"}
+#< task
+#n_distinct(filter(sum1,...))
+#>
+n_distinct(filter(sum1,x2001code == 1))
+#< hint
+display("Check the info box for help on how to use the n_distinct function and try to remember how you filtered the data set before in previous tasks. If you can't remember you can always use the solution button.")
+#>
+```    
+
+You should see now that 946 out of the 2239 houses (calculated in the previous exercise) are built under the new energy code regime from 2001.
+
+#< award "Quick study!"
+  Great! You seem to be a quick study and you just gained a good deal of knowledge on how to use practical `dplyr` functions.
+#>
+
+#< quiz "Houses built before the code change"
+question: How many houses out of 2239 were built before the code change took place?
+sc:
+    - 1239
+    - 1293*
+    - 1200
+
+success: Great, your answer is correct!
+failure: Your answer is incorrect. Try again.
+#>
+
+#< award "Quizmaster Level 1"
+  Great! You solved your another quiz of this problem set. Hopefully without the help of a calculator ;) 
+#>
+
+<br>
+
+#< info "saveRDS() and readRDS()"
+The function `saveRDS` can be used to save a single R object to the specified rds file format. The file format is compressed and ensures a small file size. This is especially useful when you want to work with huge data sets.
+
+The following command shows how you can save the data frame `data` as an rds-file called `data.rds` into your working directory.
+
+
+```{r "2__17",eval=FALSE}
+saveRDS(data, "data.rds")
+```
+
+The following command shows how you can load the rds-file called `data.rds` from your working directory again and assign it to the variable `data`.
+
+
+```{r "2__18",eval=FALSE}
+data = readRDS("data.rds")
+```
+
+If you want to know more about different file formats you can check out <a href="http://www.sthda.com/english/wiki/saving-data-into-r-data-format-rds-and-rdata" target = "_blank">sthda.com</a> or learn more about saveRDS on the <a href="http://stat.ethz.ch/R-manual/R-devel/library/base/html/readRDS.html" target = "_blank">R documentation page</a>
+
+#>
+
+The next task is intended as an illustration on how to save an R object as a rds file and is optional. We won't work with rds files in this problem set in any of the following tasks.
+
+**Task:** Save the data `sum1` as `dat1.rds` 
+
+```{r "2__19", optional=TRUE}
+#< task_notest
+# Enter your command here
+#>
+saveRDS(sum1,"dat1.rds")
+#< hint
+display("Just type saveRDS(sum1,\"dat1.rds\") and press check")
+#>
+```
+
+In this exercise you should have gained a deeper insight into the data used in this problem set. In the following chapter you will learn even more about the houses observed by visualizing the data.
+
+
+
+## Exercise 3 -- Examine energy consumption with data visualization
+
+In this Exercise you should learn how to use the `ggplot()` function out of the `ggplot2` package, which was developed by Hadley Wickham. The fundamentals were established in the book Grammar of Graphics by Wilkinson, which was first published in 1999.
+
+`ggplot2` is a very powerful package that allows you to draw any graph you could think of. Despite the unmatched versatility the usage isn't too complicated once you get the grasp on how building graphs with `ggplot2` works.
+
+In `ggplot2` you can build graphs by adding multiple elements in forms of layers to a defined `ggplot()` object.
+
+The basic elements are Data, Geometries, Aesthetics and Scales. More advanced elements are Statistical transformations, Coordinate systems, Facets and Visual Themes.
+
+To get a better overview and a deeper understanding of `ggplot2` you should check out the <a href="http://docs.ggplot2.org/current/" target = "_blank">official documentation page of the package ggplot2</a>.
+
+**Task:** Before we can begin to draw beautiful graphs we need some data. Go ahead and load the data `gg_new.dta` from the first exercise of this problem set by using the `read.dta()` function and assign it to the variable `ggdata`.
+
+```{r "3_"}
+#< task
+library(foreign)
+
+# enter command here
+#>
+ggdata = read.dta("gg_new.dta")
+#< hint
+display("Just type ggdata = read.dta(\"gg_new.dta\") and press check")
+#>
+```
+
+
+Since we want to draw a graph and highlight the differences in electricity and gas consumption we need to filter, group and summarize the data again.
+
+First, we want to filter billing data from the year 2006, before we group the data by its building code and the billing month. At the end we just have to summarize the data with the function `mean` on the variables `elec` and `gas`.
+
+**Task:** In this task you just need to remove the # (uncomment the code lines) and press check. Take a look at the code and try to recall how to use the pipe operator.
+
+```{r "3__2"}
+#< task
+library(dplyr)
+
+#plotdata = ggdata %>%
+#  filter(year == 2006) %>% 
+#  group_by(x2001code, month) %>% 
+#  summarise_each(funs(mean), elec, gas)
+#>
+plotdata = ggdata %>%
+  filter(year == 2006) %>% 
+  group_by(x2001code, month) %>% 
+  summarise_each(funs(mean), elec, gas)
+#< hint
+display("Just remove the # in front of the last code chunk and press check")
+#>
+```
+
+
+**Task:** Now take a look at the data frame `plotdata` by returning it.
+
+```{r "3__3"}
+#< task
+#enter command here
+#>
+plotdata
+#< hint
+display("Just return the data by typing in the name of the data frame plotdata")
+#>
+```
+
+After returning `plotdata` you can see that you have 24 rows now, which consist of 12 months per building code. We will use the obtained data in the next exercises to create plots with the `ggplot2` package.
+
+#< info "ggplot()"
+The command `ggplot()` from the `ggplot2` package is used to create a ggplot object which contains multiple graphic layers.
+
+We will use the data set tips from the reshape2 package as an example.
+
+```{r "3__4",eval=FALSE}
+library(reshape2)
+#Taking a look at the first few rows
+head(tips)
+#   total_bill  tip    sex smoker day   time size
+# 1      16.99 1.01 Female     No Sun Dinner    2
+# 2      10.34 1.66   Male     No Sun Dinner    3
+# 3      21.01 3.50   Male     No Sun Dinner    3
+# 4      23.68 3.31   Male     No Sun Dinner    2
+# 5      24.59 3.61 Female     No Sun Dinner    4
+# 6      25.29 4.71   Male     No Sun Dinner    4
+```
+
+Creating a ggplot object and storing it in `my.plot`. The second argument `aes` adds the Aesthetics element, where `total_bill` is plotted on the x-axis and `tip` is plotted on the y-axis. `geom_point()` adds the data points.
+
+```{r "3__5",eval=TRUE}
+library(reshape2)
+library(ggplot2)
+#saving the plot as a ggplot object named my.plot
+my.plot = ggplot(tips, aes(x=total_bill, y=tip)) + geom_point()
+#printing the plot
+my.plot
+```
+
+
+#>
+
+**Task:** Plot the data `plotdata` for the variable `elec` using the funtion `ggplot()`. Use factors of the variable `month` on the x-axis and the `elec` variable on the y-axis. Add `geom_point()` to plot the data using points as for a scatterplot. Use the argument `size=2` inside of `geom_point()`.
+
+
+```{r "3__6"}
+#< task_notest
+#loading the ggplot2 library
+library(ggplot2)
+
+#ggplot(plotdata, aes(x = factor(month), y = elec)) + geom_point(size=...)
+#>
+ggplot(plotdata, aes(x = factor(month), y = elec)) + geom_point(size=2)
+#< hint
+display("Just replace the ... and hit check")
+#>
+```
+
+You now created a `ggplot` object and added an Aesthetics and a Geometries layer with the command `aes()` and `geom_point()` to it. You can see that the variable `month` was used in combination with the `factor()` function. This is useful, because `ggplot()` will only use the existing levels on the x-axis. Otherwise, you would see continuous numbers like 2.5 on the x-axis for example.
+
+#< award "graphic artist"
+  Great! You created your first graph using `ggplot()`. 
+#>
+
+#< info "facet_grid()"
+The command `facet_grid()` from the `ggplot2` package can be used to split a graph into a matrix of panels. You basically split up data by one variable or multiple variables and plot the subsets of data together in one divided plot.
+
+We will use the data set tips from the reshape2 package as an example.
+
+```{r "3__7",eval=FALSE}
+library(reshape2)
+#Taking a look at the first few rows
+head(tips)
+#   total_bill  tip    sex smoker day   time size
+# 1      16.99 1.01 Female     No Sun Dinner    2
+# 2      10.34 1.66   Male     No Sun Dinner    3
+# 3      21.01 3.50   Male     No Sun Dinner    3
+# 4      23.68 3.31   Male     No Sun Dinner    2
+# 5      24.59 3.61 Female     No Sun Dinner    4
+# 6      25.29 4.71   Male     No Sun Dinner    4
+```
+
+Creating a ggplot object and storing it in `my.plot` 
+```{r "3__8",eval=TRUE}
+library(reshape2)
+#saving the plot as a ggplot object named my.plot
+my.plot = ggplot(tips, aes(x=total_bill, y=tip)) + geom_point()
+#printing the plot
+my.plot
+```
+
+Using `facet_grid()` to divide the plot by the variable `sex` would create two panels for both genders of the waiters. Since the ggplot object is saved in `my.plot`, we can add the extra layer by just using a `+` sign.
+
+`facet_grid(sex ~ .)` would facet the plot vertical, whereas `facet_grid(. ~ sex)` facets the plot horizontal.
+
+```{r "3__9",eval=TRUE}
+#adding the facet grid to the exsisting object my.plot
+my.plot = my.plot + facet_grid(. ~ sex)
+my.plot
+```
+
+If you want to know more about the `facet_grid()` command, you can take a look at <a href="http://docs.ggplot2.org/current/facet_grid.html" target = "_blank"> docs.ggplot2.org/current/facet_grid.html</a>.
+
+#>
+
+**Task:** Create the same plot as in the previous exercise, but add a horizontal facet grid using the variable `x2001code` with the `facet_grid()` function to divide the graph in two panels. Also change the shape of the points using the option `shape=2` inside the `geom_point()` command.
+
+You will see that the option `shape=2` draws triangles instead of black solid points.
+
+In this task you just need to uncomment the code and replace the ... before you can press the check button.
+
+```{r "3__10"}
+#< task_notest
+#ggplot(plotdata, aes(x = factor(month), y = elec)) + geom_point(...) + facet_grid(. ~ ...)
+#>
+ggplot(plotdata, aes(x = factor(month), y = elec)) + geom_point(shape=2) + facet_grid(. ~ x2001code)
+#< hint
+display("Try to use the info box on the facet_grid() function to solve this task")
+#>
+```
+
+Even though we have split up the plot by the building code the house was built under, we aren't able to see the differences in electricity consumption very well. An important aspect in creating plots is to visualize the results. Plots are used to communicate the findings of your work with the data at hand to a broad audience.
+
+You cannot assume that everyone is an expert on the field of your work. So try to create your plots in a way that they can be understood easily by a broad audience without the need of extensive expert knowledge on the topic.
+
+**Task:** Create a plot using `ggplot()` with `geom_point()` and use the option `col = factor(x2001code)` inside of the `aes()` function to color the data points by building code. Again use the `size=2` argument to draw bigger points.
+
+Save the plot as `ggelec` and print it.
+
+
+```{r "3__11"}
+#< task_notest
+#ggelec = ggplot(plotdata, aes(x = factor(month), y = elec, col = factor(...))) + geom_point(...)
+#>
+ggelec = ggplot(plotdata, aes(x = factor(month), y = elec, col = factor(x2001code))) + geom_point(size=2)
+#< hint
+display("Try to uncomment the code and replace the ... with x2001code to solve this task")
+#>
+
+#< task
+
+#print the graph saved in the variable ggelec
+ggelec
+#>
+```
+
+You should be able to see that the red points representing the electricity consumption of the houses built under the old code regime are higher for each month than the turquoise points representing the houses built under the 2001 code regime. This is true for all months except January where the consumption is nearly equal for both code regimes.
+
+Let's try to highlight the differences between the houses of each code regime better. We will create a colored bar plot for this matter. 
+
+#< info "stat_summary()"
+The command `stat_summary()` from the `ggplot2` package can be used to add summary functions to a plot.
+
+You can use summary functions individually e.g. with `fun.y` or to the whole data with `fun.data`
+
+To learn more about `stat_summary()` I encourage you to read the <a href="http://docs.ggplot2.org/current/stat_summary.html" target = "_blank"> ggplot2 documentation for stat_summary()</a>.
+
+#>
+
+**Task:** Create a bar plot using `ggplot()` with `geom="bar"` and use the option `col = factor(x2001code)` plus the option `fill` to color the bars by the building code.
+
+Save the plot as `ggelec2` and print it.
+
+```{r "3__12"}
+#< task_notest
+#ggelec2 = ggplot(plotdata,aes(x=factor(month),
+#y=elec,fill=factor(...)), 
+#color=factor(...)) +
+#stat_summary(fun.y=mean,geom="bar")
+#>
+ggelec2 = ggplot(plotdata,aes(x=factor(month),
+y=elec,fill=factor(x2001code)), 
+color=factor(x2001code)) + 
+stat_summary(fun.y=mean,geom="bar")
+
+#< hint
+display("Try to uncomment the code and replace each ... with x2001code to solve this task")
+#>
+#< task
+#print the graph saved in the variable ggelec2
+ggelec2
+#>
+
+```
+
+You should see a bar plot with overlapping bars. This makes it easier to see that the energy consumption is lower for the houses built under the new building codes, but the plot still can be improved. For example we wouldn't be able to tell from this plot that the energy consumption in January for houses built under the old code is nearly equal to the houses built under the new code regime. 
+
+In the next task we want to present the bars for each month side by side so that we have two bars for each month next to each other.
+
+
+**Task:** Create the bar plot from the last task using `ggplot()` with `geom="bar"` and use the option `col = factor(x2001code)` plus the option `fill` to color the bars by the building code.
+
+In addition, use the option `position=position_dodge()` inside `stat_summary()` to draw the bars next to each other.
+
+Also, save the plot as `ggelec2` again and print it.
+
+```{r "3__13"}
+#< task_notest
+#ggelec2 = ggplot(plotdata,aes(x=factor(month),y=elec,fill=factor(x2001code)), color=factor(x2001code)) + stat_summary(fun.y=mean,position=position_dodge(),geom="bar")
+#>
+ggelec2 = ggplot(plotdata,aes(x=factor(month),y=elec,fill=factor(x2001code)), color=factor(x2001code)) + stat_summary(fun.y=mean,position=position_dodge(),geom="bar")
+
+#< hint
+display("Try to uncomment the code and replace each ... with x2001code to solve this task")
+#>
+#< task
+ggelec2
+#>
+```
+
+You should be able to see the differences in electricity consumption even better now. In this plot it also gets clear that the electricity consumption is slightly higher in January for houses built under the new energy building code.
+
+In the next task we want to add a descriptive legend and some labels for the axes plus a title.
+
+**Task:** Use the option `scale_y_continuous`, `scale_x_discrete` and `scale_fill_discrete` to add a descriptive color legend and labels for the x- and y-axis.
+
+Also, use the option `ggtitle()` to add the title "Electricity Consumption Pre- & Post-Code-Change Comparison" to the graph.
+
+Save the plot as `ggelec2` again and print it.
+
+```{r "3__14"}
+#< task_notest
+ggelec2 = ggelec2 + scale_y_continuous("Mean Electricity Consumption") +
+scale_x_discrete("Month") +
+scale_fill_discrete(name ="Building Code", labels=c("Pre-Code-Change", "Post-Code-Change")) + 
+ggtitle("Electricity Consumption Pre- & Post-Code-Change Comparison")
+#>
+#< hint
+display("Just press the check button to solve this task")
+#>
+#< task
+ggelec2
+#>
+```
+
+You should have noticed that for the scales of the axes we used a continuous scale for the y-axis whereas we used a discrete scale for the x-axis.
+
+Now that we have created a nice bar plot for the electricity consumption we want to create the same bar plot for the consumption of natural gas and compare both plots next to each other.
+
+#< info "grid.arrange()"
+The command `grid.arrange()` from the `gridExtra` package can be used to create a multipaneled graph and works among others with ggplot2 objects.
+
+If you wanted to plot two graphs, you can use the following command to plot them next to each other by specifying the number of columns to two.
+
+```{r "3__15",eval=FALSE}
+#loading the gridExtra library
+library(gridExtra)
+
+#arranging both plots with 2 columns
+grid.arrange(plot1,plot2,ncol=2)
+```
+
+
+To learn more about `grid.arrange()` function and the `gridExtra` package I encourage you to read the <a href="https://cran.r-project.org/web/packages/gridExtra/index.html" target = "_blank"> gridExtra documentation</a>.
+
+#>
+
+Before creating the plot for the monthly consumption of natural gas try to answer the quiz question.
+
+#< quiz "Natural gas consumption"
+question: When do you think is the consumption of gas at its peak?
+sc:
+    - during the summer
+    - throughout the whole year
+    - during the winter*
+
+success: Great, your answer is correct!
+failure: Your answer is incorrect. Try again.
+#>
+
+#< award "Quizmaster Level 2"
+  Great! You solved another quiz of this problem set.
+#>
+
+**Task:** Create the same bar plot for the consumption of natural gas.
+
+Save the plot as `ggas2`  and print it next to the previous plot `ggelec2` by specifying the number of columns to `ncol=1`. In this task most of the solution is already given on how to create the second plot for natural gas. 
+
+You just need to use the command `grid.arragne` to print both plots namely `ggelec2` and `ggas2` below each other in that order. 
+
+```{r "3__16"}
+#< task_notest
+#loading the gridExtra library
+library(gridExtra)
+
+#creating the plot
+ggas2 = ggplot(plotdata,aes(x=factor(month),y=gas,
+ fill=factor(x2001code)), color=factor(x2001code)) +  
+ stat_summary(fun.y=mean,position=position_dodge(),geom="bar")
+
+#adding labels
+ggas2 = ggas2 + scale_y_continuous("Mean Natura Gas Consumption") +
+ scale_x_discrete("Month") +
+ scale_fill_discrete(name ="Building Code", labels=c("Pre-Code-Change", "Post-Code-Change"))
+
+#adding a title
+ggas2 = ggas2 + ggtitle("Natural Gas Consumption Pre- & Post-Code-Change Comparison")
+
+#print both plots
+#grid.arrange(...,ggas2, ncol=...)
+#>
+grid.arrange(ggelec2, ggas2, ncol=1)
+#< hint
+display("Just uncomment the code in the las line and replace the ... with the correct expressions to solve this task")
+#>
+```
+
+#< award "Picasso"
+  Awesome! You are quite a graphic artist!
+#>
+Printing both of the charts in a grid helps to see the differences in energy consumption between both code regimes easier.
+
+In the previous chart you saw that the consumption of electricity spikes in the summer (warmer) months whereas natural gas reaches its highest levels in the winter (colder) months. This makes perfect sense since electricity is heavily used for the air-conditioning in Florida, whereas natural gas is mainly used for heating during colder months.
+
+JK use climate data from the weather station at the Gainesville Airport and use two variables, namely *average heating degree days (AHDD)* and *average cooling degree days (ACDD)*. The base point for the calculation of these days is 65° Fahrenheit. The difference between the average daily temperature and the base point is  the number of cooling degrees in a day. Analog for the heating degrees.
+
+In the next task we want to create a line chart for the average heating and cooling degrees to see if that corresponds with our results from the charts we just created.
+
+**Task:** Create the line chart showing ACDD and AHDD
+
+In this task you just need to press check button. The code is commented for better understanding
+
+```{r "3__17"}
+#< task_notest
+#we just want to select the variables month, CDD and HDD using the pipe operator
+#to calculate the mean for each month we group the data by the variable month
+
+data.dd <- ggdata %>%
+  select(month,CDD,HDD) %>%
+  group_by(month) %>%
+  summarize_all(funs(mean))
+
+#to change the layout of the data frame from wide to long we use melt from the reshape2 package
+library(reshape2)
+
+data.dd.long<-melt(data.dd, id.vars="month")
+
+#creating the line plot for ACDD and AHDD
+ddplot = ggplot(data.dd.long,
+       aes(month,value,color=variable))+
+       geom_line(size = 1.2)+
+       geom_point(size = 3)+
+       scale_x_continuous(name="Months",breaks = c(1:12))+
+       ggtitle("Number of ACDD and AHDD for each Month")+
+       scale_y_continuous("Degree Days")+
+       scale_color_manual(values=c("red", "blue"))+
+       theme(legend.title=element_blank())
+
+#print the plot
+ddplot
+#>
+
+#< hint
+display("Just press check to solve this task")
+#>
+```
+
+We can see the average degree days for each month. The red line represents the cooling degree days and the blue-colored line represents the heating degree days. From July to September we have more than 15 degrees Fahrenheit on average that need to be cooled down.
+
+Remember that the reference point of 65 degrees Fahrenheit is just a way to control for the weather variability by taking the temperature into account and does not necessarily reflect the exact base point for each household.
+
+In the next task we want to compare the consumption of electricity and natural gas with the degree days by plotting all three plots in one graph using `grid.arrange()` again.
+
+**Task:** Plot the three graphs from the previous tasks. In this task you just need to add the last plot `ddplot` to the given code chunk.
+
+
+```{r "3__18", fig.height=10}
+#< task
+#print the three plots underneath each other
+#grid.arrange(ggelec2, ggas2, ..., ncol=1)
+#>
+grid.arrange(ggelec2, ggas2, ddplot, ncol=1)
+#< hint
+display("Just replace ... with the correct object")
+#>
+```
+
+This plot helps to understand the energy consumption for both electricity and natural gas easier by comparing it with its demand, which is represented by the degree days CDD & HDD. If you take a look at the red line from the plot we just added you can see that the increase of CDD (red line) shows a similar increase of electricity consumption.
+
+The results correspond with our assumptions and make sense in that way that natural gas is mostly used for heating and electricity is predominantly used for space cooling.
+
+
+## Exercise 4 -- Explaining the consumption of electricity
+
+In Exercise 3 we used plots to get a better understanding of the data at hand by visualizing the consumption of electricity and natural gas for the houses built before and after the code change.
+
+In Exercise 4.1 we want to look at the summary statistics of the data set using the `stargazer` function from the eponymous package, before we want to explain the electricity consumption with a regression model in exercise 4.2 to get an introduction into linear regression models.
+
+## Exercise 4.1 -- Summary Statistics
+
+#< info "select()"
+`select()` from the `dplyr` package can be used to select columns. Further you can specify within the `select` function what columns not to select by using the subtraction operator `-` in front of the column name you wish to exclude.
+
+
+```{r "4_",eval=FALSE}
+library(dplyr)
+#The following line would select all columns from the data frame `data` except `column1` and save #the resulting dataset as data.wo.column1
+data.wo.column1 = select(data, -column1)
+```
+
+If you want to exclude more than just one column you can simply use a vector of the column names inside `select()` as an argument or type each column you want to exclude as an extra argument.
+
+```{r "4__2",eval=FALSE}
+library(dplyr)
+#The following line would select all columns from the data frame `data` except `column1` and `column2` 
+select(data, -c(column1,column2))
+
+#You could also type each column name as a extra argument
+select(data, -column1, -column2)
+```
+
+If you want to know more about the `dplyr`, you can take a look at the <a href="https://cran.rstudio.com/web/packages/dplyr/vignettes/introduction.html" target = "_blank">vignette</a>.
+#>
+
+In our first tasks we want to replicate the summary statistics from the paper (see Table 1 on page 33).
+
+**Task:** Before we can start with Exercise 4 we need to load the data from `gg_new.dta` again. In the next step drop the variables `logft`, `x2001code`, `home_id` and `zip` by using the `select()` command from the `dplyr` package and save the resulting data frame as `data.summary`.
+
+If you need help, just read the info box first.
+
+```{r "4__3"}
+#< task
+library(foreign)
+#data = read.dta("gg_new.dta")
+#>
+data = read.dta("gg_new.dta")
+
+#< task
+library(dplyr)
+#data.summary = select(...,-c(logft,x2001code,...,zip))
+#>
+data.summary = select(data,-c(logft,x2001code,home_id,zip))
+#< hint
+display("Replace the ... with the correct expression. If you need help read the info box on how to use the select command")
+#>
+```           
+
+#< info "stargazer()"
+`stargazer()` from the popular `stargazer` package can be used to create regression tables in LaTeX code, ASCII code or in our case in HTML code. It can also be used to create a summary statistics table, which will be our focus in the next task of this exercise.
+
+The widespread usage of `stagazer` in research and teaching institutions can be explained by three aspects. It is easy to use, supports a large number of regression models and has some beautiful aesthetics similar to `ggplot2`.
+
+
+```{r "4__4",eval=FALSE}
+library(stargazer)
+#Using stargazer to save a summary statisctis table in HTML code
+stargazer(data,type="html",out="summary_statistics.html",title="Table 1: Summary Statistics")
+#note that this will save the created HTML file in your working directory as summary_statistics.html
+```
+
+If you want to know more about the `stargazer` you can take a look at the <a href="https://cran.r-project.org/web/packages/stargazer/vignettes/stargazer.pdf" target = "_blank">vignette</a> or the more detailed <a href="https://cran.r-project.org/web/packages/stargazer/stargazer.pdf" target = "_blank">Reference manual</a>.
+#>
+
+**Task:** Use `data.summary` to create a summary statistics table. To solve this task you just need to press the check button, but take a close look at the code and try to understand it.
+
+The argument `order` arranges the order of the variables. The order was used to match the order in the paper by Grant D. Jacobsen and Matthew J. Kotchen. 
+
+The argument `covariate.labels` is used to customize the variable labels to a more descriptive name. The variable labels need to match the specified order of the variables.
+
+`summary.stat` lets you define which summary statistics are used for the table and `align` gives you the option to align values at the decimal mark.
+
+`notes`, `notes.align` and `title` should be self-explanatory.
+
+*Note:* The argument `out="filename.html"` is omitted in this case to show the HTML table in R Markdown directly. Including the argument would save the HTML table of the summary statistics locally in your working directory as filename.html if not specified differently.
+
+```{r "4__5", results = 'asis'}
+#< task
+library(stargazer)
+
+stargazer(data.summary,
+          order = c(3,4,11,5,7,6,8,9,10,1,2,12,13),
+          notes.align = "l",
+          notes = "Summary statistics are based on 64,471 observations.",
+          type="html",
+          title="Table 1: Summary Statistics",
+          align=FALSE,
+          summary.stat = c("mean", "sd", "min", "max"),
+          covariate.labels = c("Electricity (kWh)","Natural gas (therms)","Effective year built (EYB)","Square feet","Bathrooms","Bedrooms","Stories","Central air-conditioning","Shingled roof","Billing year", "Billing month","Average cooling degree days (ACDD)","Average heating degree days (AHDD)"))
+#>
+
+#< hint
+display("Just press the check button to solve this task")
+#>
+```     
+
+<br>
+The summary statistic shows the mean, the standard deviation, the minimum and the maximum for all of our variables observed based on 64,471 monthly observations. You can see that the average house has a size of about 2,073 square feet and consumes 1,146 kWh of electricity and almost 24 therms of natural gas.
+<br>
+
+#< quiz "Summary Statistics"
+question: What is the size of the biggest house observed in square feet?
+sc:
+    - 2073
+    - 7465*
+    - 2837
+
+success: Great, your answer is correct!
+failure: Your answer is incorrect. Try again.
+#>
+
+<br>
+
+We want to calculate the means similar to the summary statistics, but only for the houses built before the code change of 2001. For the mean we only use data from the billing year 2006.
+
+**Task:** Just press the check button to solve this task.
+
+*Note:* The following code partly replicates the Table 2 of the paper and is important to calculate percentage differences in following tasks.
+
+```{r "4__6"}
+#< task
+#the data is again collapsed with the summarize_all command on each house specified by home_id
+data1 = data %>%
+  filter(year == 2006) %>%
+  group_by(home_id) %>%
+    summarize_all(funs(mean))
+
+#to create the output, we use some functions of the tidyr package
+library(tidyr)
+
+#the data is grouped by the building code variable x2001code and summarized to create a mean for every variable of interest
+#gather is used since the x2001code will be used as a column to divide the means by the building code
+#the data is grouped by variable before the difference for each variable is calculated between the two energy codes
+data2 = data1 %>% 
+  group_by(x2001code) %>%
+  summarise(elec = mean(elec), gas = mean(gas), squarefeet = mean(squarefeet),baths = mean(baths),beds = mean(beds),stories = mean(stories)) %>%
+  gather(key = "variable","value",elec,gas,squarefeet,baths,beds,stories) %>%
+  spread(x2001code,value) %>%
+  group_by(variable) %>%
+  mutate(difference = `1`-`0`)
+
+#the round command is used
+data2[,2:4] = round(data2[,2:4],digits = 3)
+
+#return the final table
+data2
+#>
+
+#< hint
+display("Just press the check button to solve this task")
+#>
+```     
+
+<br>
+
+You can see that the houses built before the code change consume on average 1150 kWh per month and the mean consumption of natural gas is roughly 23 therms per month. Comparing the values of houses built under the old code regime makes clear that the houses build after the code change took place are not only smaller, but consume less electricity and natural gas.
+
+
+In the next tasks we want to run some regressions. Regression analysis is a statistical modeling process to estimate the relationship of the dependent variable also sometimes called response variable and one or more independent variable(s) (explanatory variable(s)). 
+
+## Exercise 4.2 -- Linear Regressions
+
+The results of the regression helps to predict changes in the value of the dependent variable when one or more of the explanatory variable(s) varies. For the introduction to regressions we want to focus on simple linear regressions and multiple linear regressions using the method of ordinary least squares (OLS). OLS optimizes the fit of the model in order to minimize the sum of squared residuals.
+
+I chose the formula notation to match Wooldridge (2015).
+
+The residual for each observation is the difference between the value of the response variable predicted by the model $\hat{y_i}$ and the true value of the response variable $y_i$.
+
+$$\hat{u_i} = y_i - \hat{y_i}$$
+
+The "residual sum of squares" *(SSR)* we want to minimize is calculated as follows
+
+$$SSR = \sum_{i=1}^n \hat{u_i}^2$$
+
+The regression formula for the simple linear regressions looks like the following example. The independent variable is represented by $x_i$, whereas the parameters $\beta_0$ is the intercept of the regression line and $\beta_1$ is the estimated coefficient or slope parameter for the independent variable and $i$ simply indexes each observation.
+
+The variable $u$ is called the error term or the disturbance and represents unobserved factors that affect $y$.
+
+$$y_i = \beta_0 + \beta_1 x_i + u_i, i=1,...,n$$
+
+As an introduction to regressions, we want to find out what effect the size of the observed houses among other explanatory variables has on the consumption of electricity. 
+
+Similar to JK we want to select only billing data from the year 2006 and group the data by the variable `home_id`.
+
+**Task:** Create a new data frame called `regdata` by filtering `data` (year == 2006). Then group the data by the variable `home_id` and calculate the means of all variables for each residence (identified by home_id).
+
+Print the resulting data frame `regdata` using the `head()` function.
+
+```{r "4__7"}
+#< task
+data = read.dta("gg_new.dta")
+
+#selecting, grouping and summarizing data with the pipe operator
+regdata = data %>%
+  filter(year == 2006) %>% 
+  group_by(home_id) %>% 
+  summarize_all(funs(mean))
+
+#printing the head of the data frame
+head(regdata)
+#>
+
+#< hint
+display("Just press the check button to solve this task")
+#>
+``` 
+
+#< info "lm()"
+`lm()` is used to fit linear models in R. For a standard OLS regression you just need to specify the formula and the data used.
+
+
+```{r "4__8",eval=TRUE}
+library(reshape2)
+#Taking a look at the first few rows
+head(tips)
+#   total_bill  tip    sex smoker day   time size
+# 1      16.99 1.01 Female     No Sun Dinner    2
+# 2      10.34 1.66   Male     No Sun Dinner    3
+# 3      21.01 3.50   Male     No Sun Dinner    3
+# 4      23.68 3.31   Male     No Sun Dinner    2
+# 5      24.59 3.61 Female     No Sun Dinner    4
+# 6      25.29 4.71   Male     No Sun Dinner    4
+
+#Using lm to run a regression. The dependent variable is tip and the explanatory variable is total_bill
+reg = lm(tip ~ total_bill, data = tips)
+#note that this will save the lm object as reg
+
+#This prints the summary of the regression
+summary(reg)
+```
+
+If you want to know more about the `lm` command, you can take a look at the <a href="https://stat.ethz.ch/R-manual/R-devel/library/stats/html/lm.html" target = "_blank">R Documentation</a>.
+#>
+
+The next quiz is totally optional as it relates to the info box about `lm` above.
+
+#< quiz "Regression interpretation"
+question: What effect has the total bill amount total_bill on the tips of a waiter?
+sc:
+    - The average tip increases by almost 16 cents for every 1 dollar increase of the total bill
+    - The total bill amount does not have a significant effect on the tip a waiter receives on average
+    - If the total bill amount increases by one dollar, then the avg. tip increases by 10 cents*
+
+success: Great, your answer is correct!
+failure: Your answer is incorrect. Try again.
+#>
+
+<br>
+
+#< award "Regression Lv. 1"
+  Great! You solved another quiz of this problem set.
+#>
+
+#< info "Regression formulae in R"
+
+The model formulae in R is in general easy to grasp once you run a few regressions and get to know it better. Most of the formulae is self-explanatory. 
+
+I just want to touch on a few operators to add terms to a regression model. `+` simply adds a term to the model and `:` does add the interaction of the specified term, whereas `*` adds both terms separately and their interaction terms as well.
+
+If you want to know more about the model formulae in R, you can take a look at the <a href="https://ww2.coastal.edu/kingw/statistics/R-tutorials/formulae.html" target = "_blank">Tutorial by William B. King, Ph.D.</a> or <a href="http://faculty.chicagobooth.edu/richard.hahn/teaching/formulanotation.pdf" target = "_blank">Statistical Formula Notation in R</a>.
+#>
+
+In our first regression we want to explain the consumption of electricity. Keep every explanatory variable except gas, since gas is a dependent variable too and in this model we want to explain the consumption of electricity solely. 
+
+We also exclude the variable `home_id` since it is a random identification number assigned to each house observed and the variable `year` because the only billing year in the data set is from 2006 as we filtered the data in the last task.
+
+Also, exclude the categorical variable `x2001code` since we do not want to differentiate the consumption of the houses built under varying building codes in our first regressions.
+
+The econometric model for the consumption of electricity is:
+
+$$elec = \beta_0 + \beta_1squarefeet + \beta_2CDD + \beta_3HDD + \beta_4beds + \beta_5baths + \beta_6stories + \beta_7centralair \\\\ + \beta_8shingled + beta_9zip + \beta_{10}effectiveyearbuilt + u$$
+
+**Task:** Run the first regression `model1` of `elec` on the variables `squarefeet`, `CDD`, `HDD`, `beds`, `baths`, `stories` and use factors for the variables `centralair`, `shingled`, `zip` and `effectiveyearbuilt`.
+
+
+```{r "4__9"}
+#< task
+#the regression formula is used with factors for categorical variables
+model1 = lm(elec ~ squarefeet + CDD + HDD + beds + baths + stories + factor(centralair) + factor(shingled) + factor(zip) + factor(effectiveyearbuilt), data=regdata)
+
+#this prints the summary of the regression
+summary(model1)
+#>
+
+#< hint
+display("Just press the check button to solve this task")
+#>
+``` 
+
+#< award "Regression Lv. 2"
+  Great! You just ran your first regression in this problem set!
+#>
+
+Our first regression model describes the statistical relationship between the response variable `elec` and all of our predictors we included. Now we need to interpret and evaluate the regression model.
+
+One important aspect is the p-value for each term, which tests the null hypothesis for every coefficient. The null hypothesis assumes that the tested coefficient is equal to zero, which means the predictor has no effect on the response variable. A term with a low p-value (< 0.05) is called significant, because a change in the predictor variable's value is related with a change in the response variable.
+
+A low p-value means that the null hypothesis can be rejected, whereas high p-values are typically used to determine which terms to remove from the regression model. You should never use the p-value blindly to toss out predictors of your regression model if they make sense to include. Excluding all predictors who are not perfectly significant, but have an effect on $y$ can cause the OLS estimators to be biased.
+
+We can see that the variables `centralair` and `shingled` are far from being significant. JK mention in the paper that almost all houses have a shingled roof and central air-conditioning. In the next step we want to calculate the fraction for each variable.
+
+#< info "The Gauss-Markov Assumptions"
+
+The Gauss-Markov assumptions is a set of ideal assumptions about the true regression model. These ideal conditions should be met in order for the OLS to produce good estimations.
+
+**MLR.1 - Linear in Parameters**
+The population model can be written as a linear function. Remember that coefficients can have exponents e.g. a quadratic term does not affect the linearity.
+
+$$ y = \beta_0~+~\beta_1x_1 + \beta_2x_2 ~+~...~+~\beta_kx_k~+~u   $$
+
+**MLR.2 - Random Sampling**
+
+We have a random sample of $n$ observations, which means that the values of the independent variables are obtained from a random sample of a population.
+
+$${(x_{i1},x_{i2},...,x_{ik},y_i): i = 1,2,...,n}$$
+
+**MLR.3 - No Perfect Collinearity**
+
+In the sample none of the independent variables is constant and there does not exist an exact linear relationship among the independent variables, which means that no independent variable can be expressed as a linear function of another independent variable.
+
+
+**MLR.4 - Zero Conditional Mean**
+
+The error term $u$ has an expected value of zero given any values of the independent variables, which means that the average error is zero at any values of the independent variables.
+
+$$E(u|x_1,x_2,...,x_k) = 0$$
+
+**MLR.5 - Homoscedasticity**
+
+The Homoscedasticity assumption holds if the error term $u$ has the same variance given any value of the independent variables.
+
+$$Var(u|x_1,...,x_k) = \sigma^2$$
+(Source: Wooldridge (2015), p.92)
+#>
+
+**Task:** Calculate the fraction of houses without a shingled roof. Also, calculate the fraction of houses, which are not air-conditioned.
+
+
+```{r "4__10"}
+#< task
+#this divides the amount of houses without a shingled roof by the entirety of the observations
+length(which(regdata$shingled == 0))/length(regdata$shingled)
+#this divides the amount of houses without a AC by the entirety of the observations
+length(which(regdata$centralair == 0))/length(regdata$centralair)
+#>
+
+#< hint
+display("Just press the check button to solve this task")
+#>
+``` 
+
+The calculation shows that only 0.715% of all houses do not have a shingled roof and 0.402% of all houses do not have a central air-condition.
+
+#< info "update()"
+
+When fitting multiple regressions in R it is useful to use the `update()` function to update a model formula and re-fit it instead of typing a large number of terms every time you run a regression.
+
+
+```{r "4__11",eval=FALSE}
+library(reshape2)
+#Taking a look at the first few rows
+dat <- mtcars
+#regressing weight and hp on the gas milage (mpg) of cars
+model1 = lm(mpg ~ weight + hp , data = dat)
+
+#using the update function to remove the term hp from the model formula
+model2 = update(model1, .~. -hp)
+#the first function argument is the model object we want to alter. The second term means that we want to use the whole formula from the first model and the -hp is used to remove the variable hp from the formula
+```
+
+If you want to know more about the `update` function, you can take a look at the <a href="https://stat.ethz.ch/R-manual/R-devel/library/stats/html/update.html" target = "_blank">R Manual</a>.
+#>
+
+Since there are almost no houses without a shingled roof or a central AC we should be safe to neglect those variables within our regression model. The reason is that if the explanatory variables have very little or no variation they do not add any information in estimating the relationship between $y$ and $X$.
+
+You can also see mathematically that a higher variation in $X_j$ decreases the variance of the slope estimator $\beta_j$ for $j = 1,2,...,k$. $\sigma^2$ represents the variance of the error term. The sum in the factor of the formula is our *SST* you will get to know after the next task. See also Theorem 3.2 (Wooldridge (2015), p.82).
+
+$$Var(\hat{\beta_j}) = \frac{\sigma^2} {SST_j(1-R_j^2)} = \frac{\sigma^2} {\sum_{i=1}^n (x_{ij} - \bar{x_j})^2(1-R_j^2)}$$
+
+The size of $Var(\hat{\beta_j})$ is crucial since it affects the precision of the estimator. A high variance translates into a less precise estimator, which leads to larger confidence intervals and less accurate hypotheses tests (Wooldridge (2015), p.83).
+
+
+**Task:** Use the `update()` function to update the regression model. Remove the variables `shingled` and `centralair` from to formula and save the regression model as `model2`.
+
+
+```{r "4__12"}
+#< task
+#model2 = update(..., .~. -factor(shingled) -factor(...))
+#>
+model2 = update(model1, .~. -factor(shingled) -factor(centralair))
+
+#< hint
+display("Just replace the ... with the right expressions, uncomment the code and hit the check button to solve this task")
+#>
+#< task
+#the next line prints the results of the regression
+summary(model2)
+#>
+``` 
+
+Remember that the regression coefficients represent the mean change in the dependent variable (response) for one unit change in the explanatory variable while holding all the other predictors constant. 
+
+The equation shows that with every additional square foot in size for a house we can expect an increase of 0.48 kWh per year. The p-value of < 2e-16 indicates that the coefficient for the predictor `squarefeet` is highly significant. The p-value gives the probability of how likely it is to obtain an effect as the one in our sample data, assuming that the null hypothesis is true.
+
+We also want to take a look at the $R^2$ to evaluate the model further. To calculate the $R^2$ we need the "explained sum of squares" *(SSE)* and the "total sum of squares" *(SST)*.
+
+$$SSE = \sum_{i=1}^n (\hat{y_i} - \bar{y})^2$$
+ *(SST)* represents the total sample variation in the $y_i$, which measures how wide the $y_i$ are spread out in the sample.
+
+$$SST = \sum_{i=1}^n ({y_i} - \bar{y})^2$$
+
+$$R^2 = \frac{SSE}{SST}$$
+Alternatively, you can calculate the R-squared with the "residual sum of squares" *(SSR)* instead of the *(SSE)*. The *(SSR)* is also known as the "sum of squared residuals" and measures the sample variation in the residuals $\hat{u_i}^2$, which is the unexplained variation.
+
+$$R^2 = 1 -  \frac{SSR}{SST}$$
+
+
+An R-squared of 0.4538 means that 45.38 % of the variation in electricity is explained by the variation in our predictors.
+
+*Note:* The adjusted R-squared is the R-squared adjusted for the number of predictors in the model. For multiple regression models it is important to look out for the adjusted R-squared, because simply adding more predictors to a model will likely increase the R-squared, which might appear to be a better fitting model, but is not. Also, having too many predictors can overfit the model, which decreases the ability to make predictions.
+
+#< info "Detecting Multicollinearity"
+
+High (but not perfect) correlation between two or more independent variables is called multicollinearity. To estimate $\beta_j$ it is better to have less correlation between $x_j$ and the other independent variables. (Wooldridge, 2015)
+
+There are different approaches in detecting multicollinearity in regression models. Possible ways are to calculate pairwise correlation coefficients with `cor()` for every variable, using the graphical approach with `pairs()` to plot a scatterplot matrix or using a measure like the VIF (variance inflation factor).
+
+$$VIF_j = \frac{1}{(1-R_j^2)}$$
+
+The cutoff value of 10 is most commonly used for the $VIF$ to conclude that multicollinearity is a problem if the value of the factor is larger than 10. Wooldridge (2015) mentions that just looking at the size of the $VIF_j$ is of limited use and prone to misuse, since a high value does not conclude that the standard deviation of $\hat{\beta_j}$ is too large to be useful. 
+
+If the primary interest of our regression model is in the causal effect of $x_j$ on our $y$, then we should ignore the $VIF$.
+
+Following you can see the approaches using `pairs()` and the `cor()` command to create a correlation matrix.
+
+```{r "4__13"}
+#loading the mtcars package
+attach(mtcars)
+#pairwise scatterplots for the variables mpg,cyl,disp and wt
+pairs(~mpg+cyl+disp+wt,data=mtcars)
+```
+
+On the pairwise scatterplots you can easily see that the weight in 1,000 lbs (`wt`) and the displacement in cubic inch (`disp`) are negatively related with the gas mileage (`mpg`). This means the heavier a car is and the higher the engine displacement the lower is the gas mileage. 
+
+*Note:* Gas mileage or miles per gallon (mpg) is a ratio of the distance traveled per unit of fuel (a gallon gas)
+
+Furthermore, weight (`wt`) and engine displacement (`disp`) are positively correlated, which means that the heavier a car the bigger are the engines.
+
+```{r "4__14"}
+#calculation of pairwise correlations with a matrix
+cor(mtcars)
+```
+
+You can see that the correlations we observed in the scatteplot previously are substantial. The correlation coefficient for `wt` and `mpg` is -0.8676 and the one for `disp` and `mpg` is -0.8475.
+
+Lastly the correlation coefficient for `wt` and `disp` is 0.8879.
+
+You can see that finding high correlations in a larger data set can be tedious and unclear. Now the `mtcars` data set is comparable small with only 11 variables, but I want to show you a graphical solution using the `corrplot` package.
+
+```{r "4__15"}
+#loading the corrplot package
+library(corrplot)
+#using the cor() command inside of corrplot() as an argument
+corrplot(cor(mtcars))
+```
+
+The graphical output of `corrplot` is straightforward and it is easier to discover high correlations by the color gradient and the size of the circles. High positive correlations are represented by big dark blue circles whereas high negative correlations are shown by the big dark red circles.
+
+You can of course change the graphical method e.g. you can use squares, ellipses and many more options.
+
+If you want to know more about the `cor` function, you can take a look at the <a href="https://stat.ethz.ch/R-manual/R-devel/library/stats/html/cor.html" target = "_blank"> R Manual</a>. You can find more info on the `mtcars` data set <a href="https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/mtcars.html" target = "_blank">here</a>. More info on the `pairs` function can be found on the <a href="http://stat.ethz.ch/R-manual/R-devel/library/graphics/html/pairs.html" target = "_blank"> R Manual for Scatterplot Matrices</a>. If you want to find out more on the `corrplot` package, then have a look at the <a href="https://cran.r-project.org/web/packages/corrplot/vignettes/corrplot-intro.html" target = "_blank"> Introduction to corrplot</a>.
+#>
+
+
+We want to check our regression function for multicollinearity before we remove further predictors from our model. Use the command `vif()` from the `faraway` package to calculate the $VIFs$ of the object `model2`.
+
+
+```{r "4__16"}
+#< task
+#loading the faraway library
+library(faraway)
+
+#vif(...)
+#>
+vif(model2)
+#< hint
+display("Just replace the ... with the right object name")
+#>
+#< task
+#check the correlation coeffiecient for the variable CDD and HDD
+cor(regdata$CDD,regdata$HDD)
+#>
+
+
+``` 
+
+We can see a high variance inflation factor (VIF) for the two variables `CDD` and `HDD`. By looking at the correlation coefficient for both variables we can see that a tremendous negative correlation of -0.9521 exists. 
+
+Now since electricity is used mainly for air conditioning during hot days we should exclude the variable `HDD` (Heating degree days) since this variable can better explain the consumption of natural gas, which we excluded right from the beginning.
+
+We should also think about excluding the variable `effectiveyearbuilt`, since the EYB does not matter so much for this regression. 
+
+**Task:** Use the `update()` function again and remove the factor variable `effectiveyearbuilt` and the variable `HDD` from to formula and save the regression model as `model3`.
+
+
+```{r "4__17"}
+#< task
+#model3 = update(model2, .~. -factor(...) -HDD)
+#>
+model3 = update(model2, .~. -factor(effectiveyearbuilt) -HDD)
+#< hint
+display("Just replace the ... with the right expressions and hit the check button to solve this task")
+#>
+#< task
+#loading the package regtools
+library(regtools)
+#the next line prints the results of the regression using showreg
+showreg(list(model2,model3),custom.model.names = c("Model 2","Model 3"))
+#>
+``` 
+
+The model looks okay so far, but we can see that not all of the zip codes are significant. This might be the case because there are some zip codes with a very low number of observations.
+
+We could exclude the zip codes since the houses ought to be in the same climate region, but maybe the zip codes do have an effect on the consumption of electricity or natural gas. Maybe more prosperous neighborhoods are located in some of the zip codes that reflect a higher energy consumption.
+
+The data does not control for household sizes and therefore it is a possibility that the energy consumption in zip codes where many people live in shared apartments could be distorted. This could be plausible for houses close to the campus of the University of Florida for example.
+
+Unfortunately there is no data reported for the number of residents living in each residence, so we cannot control for it via energy consumption per capita. See (Aroonruengsawat et al., 2012) for the impact of building codes on residential electricity consumption.
+
+So we will drop the zip code factors, since we do not consider residence-specific fixed effects yet.
+
+*Note:* It is important to mention that excluding relevant variables from a model can cause an "Omitted Variable Bias" by underspecifying the model. The bias appears when the omitted independent variable is correlated with the dependent variable and one or more independent variables included in the model. 
+
+**Task:** Use the `update()` function again and remove the factor variable `zip` and save the regression model as `model4`.
+
+
+```{r "4__18"}
+#< task
+#model4 = update(model3, .~. -factor(...))
+#>
+model4 = update(model3, .~. -factor(zip))
+
+#< hint
+display("Just replace the ... with the right expressions and hit the check button to solve this task")
+#>
+#< task
+#the next line prints the results of the regression
+summary(model4)
+#>
+
+
+``` 
+
+
+Now our model looks pretty good, but we can see that the variable `beds` is only significant on the 5% level and the variable `baths` is only significant on the 10% level. It is fair to assume that the two variables are correlating with the variable `squarefeet`. More bathrooms and bedrooms equal more square footage. We want to check this assumption by calculating the correlation coefficient.
+
+
+#< info "cor()"
+
+`cor()` lets you calculate the correlation between two variables. By default, it uses the Pearson method, but you can also specify "Kendall" or "Spearman".
+
+
+```{r "4__19",eval=FALSE}
+#Computes the Pearson Correlation coefficient 
+cor(x, y,"pearson")
+```
+
+If you want to know more about the `cor` function, you can take a look at the <a href="https://stat.ethz.ch/R-manual/R-devel/library/stats/html/cor.html" target = "_blank">R Manual</a>.
+#>
+
+#< quiz "square feet correlation"
+question: Which variable has the highest correlation with the variable `squarefeet`? Just guesstimate the answer!
+sc:
+    - stories
+    - beds
+    - baths*
+
+success: Great, your answer is correct!
+failure: Your answer is incorrect. Try again.
+#>
+#< award "Quizmaster Level 3"
+  Great! You guessed the answer correct.
+#>
+
+**Task:** Calculate the correlation for the variables `beds`, `baths` and `stories` with the variable `squarefeet` using the function `cor()`.
+
+
+```{r "4__20"}
+#< task
+cor(regdata$squarefeet,regdata$beds)
+cor(regdata$squarefeet,regdata$baths)
+cor(regdata$squarefeet,regdata$stories)
+#>
+
+#< hint
+display("Just hit the check button to solve this task")
+#>
+``` 
+
+Bedrooms and bathrooms have a high positive correlation with the variable `squarefeet`. We therefore want to exclude the variable `baths` in our next regression since the correlation is substantial.
+
+**Task:** Once again use `update()` and exclude the variable `baths` and save the regression model as `model5`.
+
+
+```{r "4__21"}
+#< task
+model5 = update(model4, .~. -baths)
+
+#the next line prints the results of the regression
+summary(model5)
+#>
+#< hint
+display("You just need to hit the check button to solve this task")
+#>
+
+``` 
+
+Our final regression looks good so far. All of our covariates are highly significant.
+
+
+#< quiz "Reg interpretation 2"
+question: How much does the electricity consumption change in kWh per year for an increase of one square foot when we hold all of the other variables constant?
+sc:
+    - 0.017
+    - 0.476*
+    - 27.843
+
+success: Great, your answer is correct!
+failure: Your answer is incorrect. Try again.
+#>
+<br>
+#< info "showreg() from the regtools package"
+
+The package *regtools* provides some great tools to present regression results in R, LaTeX or HTML. The reason I want to introduce this package although it is similar to the output of stargazer is the functionality of effect plots I want to use in the next tasks.
+
+The function `showreg()` gives you a more elegant output of the regression results than the one you would obtain with the `summary()` function.
+
+
+```{r "4__22",eval=FALSE}
+# load the package
+library(regtools)
+
+#Comparing two regression models with showreg
+showreg(list(regression1,regression2),custom.model.names = c("Model 1","Model 2"))
+```
+
+If you want to know more about the `showreg` function, you can take a look at the <a href="https://github.com/skranz/regtools/blob/master/DESCRIPTION" target = "_blank"> Github page of the regtools package</a>.
+#>
+
+**Task:** Compare `model1` with the last regression model `model5` using the command `showreg()`. 
+
+```{r "4__23"}
+#< task
+#showreg(list(...,model5),custom.model.names = c("Model 1","Model 5"))
+#>
+showreg(list(model1,model5),custom.model.names = c("Model 1","Model 5"))
+#< hint
+display("You just need to replace the ... with the right expression")
+#>
+
+``` 
+
+If you compare both models you can see that the effect for the `squarefeet` predictor is consistent for `model1` and `model5`. So is the coefficient of the predictor `stories`. If you wanted to make a prediction you would be better off including more explanatory variables to control for them. 
+
+Especially the coefficients for `CDD` and `beds` vary strongly from the first model. 
+
+In our case we can make the statement, that the size of the house regardless of its building code is positively correlated with the consumption of electricity that is an increase of one square foot leads on average to an increase of 0.48 kWh per year.
+
+<br>
+
+We tested our regression model for multicollinearity earlier. We want to examine if the Homoscedasticity assumption holds. For this matter we use a graphical approach to detect if heteroscedasticity is existing first.
+
+#< info "Residuals vs. Fitted & Scale-Location plot"
+The Residuals vs Fitted plot and the Scale-Location plot can be used to detect heteroscedasticity. Both plots are part of the diagnostic plots inside R.
+
+In particular the Residual vs Fitted plot is a frequently created plot and is also used to detect non-linearity and outliers. If the model has a linear relationship then the residuals should be distributed randomly around the horizontal zero line. If no residual stands out oddly, then we are safe from outliers. 
+
+Since we are interested in detecting heteroscedasticity we are looking for a "horizontal band", which is formed by the residuals if the variance of the error terms is equal (Homoscedasticity).
+
+The Scale-Location plot shows the square root of standardized residuals on the y-axis and fitted values on the x-axis. Standardized residuals are residuals divided by their own standard deviation.
+
+Equally spread out residuals along the horizontal red line on the Scale-Location plot indicate that our model is homoscedastic. 
+
+If you want to know more about the diagnostic plots in R, you can take a look at <a href="http://data.library.virginia.edu/diagnostic-plots/" target = "_blank"> Understanding Diagnostic Plots for Linear Regression Analysis</a>.
+#>
+
+**Task:** Plot the Residuals vs. Fitted plot and the Scale-Location plot.
+
+```{r "4__24", fig.width=12, fig.height=6}
+#< task
+#the next command can be used to combine multiple plots in one output the first argument
+#inside mfrow specifies the rows and the second the columns
+par(mfrow=c(1,2))
+plot(model5,1)
+plot(model5,3)
+#>
+#< hint
+display("You just need to press check to solve this task")
+#>
+
+``` 
+
+If the model was homoscedastic then the plots should show a random and equal distribution of the points through the range of the x-axis. Also, the red line should be completely flat assuming homoscedasticity. We can see that this is not the case in our plots, we just obtained.
+
+#< info "Breusch-Pagan test with bptest()"
+
+The package *lmtest* provides a function to perform a Breusch-Pagan test, which is one of the most common tests for heteroscedasticity. It tests if the variance of the error term is dependent on the values of the explanatory variables.
+
+The Breusch-Pagan test uses an auxiliary regression equation assuming a linear relation of the variance to the independent variables in which the squared residuals are regressed on the independent variables. Since we do not know the acutal errors, we have to estimate them and the form of the equation looks like the following
+
+$$ \hat{u}^2 = \delta_0 + \delta_1x_1 + \delta_2x_2 + ... + \delta_kx_k + error$$
+
+Our hypothesis for the Breusch-Pagan test looks like:
+
+$$H_0: Var(u|x_1,x_2,...,x_k) = \sigma^2$$
+
+If we can reject $H_0$ on a small significance level (usually 0.05), then we conclude that our model is not homoscedastic. On the opposite we conclude that our model is homoscedastic if we fail to reject the null hypothesis. 
+
+The function bptest uses by default the studentized test statistic, which can be changed by setting the argument `studentize = FALSE`. The "Studentized LM Test" by Koenker (1981) is a modification of the Lagrange Multiplier (LM) test proposed by Breusch and Pagan (1979) and just multiplies the sample size by the R-squared $R_{\hat{u}^2}^2$:
+
+$$LM = n~*~R_{\hat{u}^2}^2$$
+
+The form of the LM statistic is preferred due to its greater applicability as it is more robust. (Wooldridge (2015),p.251 ff.)
+
+
+```{r "4__25",eval=FALSE}
+# load the package
+library(lmtest)
+
+#Perfomring the Breusch-Pagan test on a regression model called reg1
+bptest(reg1)
+```
+
+If you want to know more about the `bptest` function, you can take a look at <a href="https://cran.r-project.org/package=lmtest" target = "_blank">lmtest: Testing Linear Regression Models</a>.
+#>
+
+In the next task we want to use a statistical test to confirm the existence of heteroscedasticity. For this matter we will use the Breusch-Pagan Test.
+
+**Task:** Perform the Breusch-Pagan test for `model5` using the command `bptest()`. 
+
+```{r "4__26"}
+#< task
+#load the lmtest package
+library(lmtest)
+#bptest(...)
+#>
+bptest(model5)
+#< hint
+display("You just need to replace the ... with the right expression. Take a look at the info box above for the Breusch-Pagan Test")
+#>
+
+``` 
+
+The p-value of our test is less than the significance level of 0.05, thereof we can reject the null hypothesis and infer that heteroscedasticity is in fact existing in our model. One possibilty of corrective measures for this issue, is the use of heteroscedasticity-robust standard errors often called heteroscedasticity-consistent (HC) standard errors.
+
+#< info "Using robust standard errors with showreg()"
+
+The `showreg()` function of the package *regtools* can be used to show regression results specifying robust standard errors. If you want to use robust standard errors, you need to set the argument `robust` to `TRUE` then you can specify the robust SE with the argument `robust.type`.
+
+
+```{r "4__27",eval=FALSE}
+# load the regtools package
+library(regtools)
+
+#Using showreg with an HC1 robust standard error
+showreg(list(reg1),custom.model.names = c("Model 1"),robust = TRUE, robust.type = "HC1")
+
+```
+
+#>
+
+A solution to heteroscedasticity can be a weighted least squares (WLS) regression or the use of robust standard errors as mentioned before.
+
+Even though the OLS estimates are unbiased in the presence of heteroscedasticity, we want to correct the standard errors, because the tests of significance are generally inappropriate and using them can lead to incorrect inferences (Long and Ervin, 2000).
+
+Our sample size is sufficient to practically use every type of HC standard errors. For smaller samples (Long and Ervin, 2000) recommend the usage of HC3.
+
+**Task:** Use `showreg()` and the HC standard error correction `HC3` to output the regression results for `model5`.
+
+```{r "4__28"}
+#< task
+#showreg(list(model5),custom.model.names = c("Model 5"),robust = ..., robust.type = "...")
+#>
+showreg(list(model5),custom.model.names = c("Model 5"),robust = TRUE, robust.type = "HC3")
+#< hint
+display("You just need to replace the ... with the right expression")
+#>
+
+``` 
+
+You can see that all of our predictors are still significant after using robust standard errors, but the standard errors are slightly higher compared with the first output of `model5`.
+
+#< info "effectplot()"
+
+The `effectplot()` function from the `regtools` package is a useful tool to visualize the effects of multiple predictors on the dependent variable. 
+
+The first argument specifies the regression object. Additional arguments are `numeric.effect` and `show.ci`.
+
+You can specify the quantiles with the numeric.effect argument. The default quantile values are "10-90". The last argument show.ci prints the confidence intervals if set to TRUE.
+
+```{r "4__29",eval=FALSE}
+#load the regtools package
+library(regtools)
+
+#attach the mtcars data set
+attach(mtcars)
+
+#run a regression
+reg = lm(mpg ~ cyl + wt + hp + disp)
+
+#create a effect plot for the change from the 25% to the 75% quantile with confidence intervals
+effectplot(reg,numeric.effect = "25-75",show.ci = TRUE)
+
+```
+
+
+#>
+
+In the next task we want to create an effect plot with the `effectplot()` function from the `regtools` package.
+
+**Task:** Create a effect plot for `model5` to show the effect of the independent variables for a change from the 10% quantile to the 90% quantile. Also, print out the confidence intervals.
+
+```{r "4__30"}
+#< task
+#effectplot(...,numeric.effect = "10-90",...)
+#>
+effectplot(model5,numeric.effect = "10-90", show.ci = TRUE)
+#< hint
+display("You just need to replace the ... with the right expression")
+#>
+
+``` 
+
+The plot shows how the avg. yearly electricity consumption changes when the independent variables increase from the 10% quantile to the 90% quantile. In this case the 10% quantile for the variable squarefeet is 1,330 and a change to the 90% quantile, which would be a size of 3,060 squarefeet increases the yearly electricity consumption by 830 kWh on average. 
+
+You can see that the effect plot makes it easier to compare the effect of different explanatory variables on the dependent variable. It is obvious that the size of the house which is captured by the variable `squarefeet` has by far the biggest effect on the electricity consumption. The reason is as mentioned before that the houses are cooled with electricity, which seems to be very energy-intensive as presented by the data.
+
+#< info "googleVis"
+
+The `googleVis` package is used to create interactive charts for data frames based on the chart tools provided by Google. Note that some charts require a Flash player. The `googleVis` package enhances the data visualization possibilities of R.
+
+You can see an example of the motion chart in the next task using the function `gvisMotionChart()`.
+
+If you want to know more about the `googleVis` package, you can take a look at the some <a href="https://cran.r-project.org/web/packages/googleVis/vignettes/googleVis_examples.html" target = "_blank">googleVis examples</a> or the <a href="https://cran.r-project.org/package=googleVis" target = "_blank">googleVis package website</a>.
+#>
+
+The next task is optional and intended to introduce you to the `googleVis` package. We want to create motion plot with the function `gvisMotionChart()` on a sample of 100 observation from the data frame `regdata`.
+
+Since the argument timevar is specified to the year variable you can not see the motion chart in action, but rather use it as a bubble plot, you can alter dynamically.
+
+**Task:** Create a Google Motion Chart with the `googleVis` package. 
+
+*Note:* It can take a while until the motion chart is loaded.
+
+```{r "4__31", results = 'asis'}
+#< task
+#load the googleVis package
+library(googleVis)
+
+#creating the Google motion chart
+motion = gvisMotionChart(sample_n(regdata,100), idvar = "home_id",
+                     timevar = "year", xvar = "squarefeet", yvar = "elec",
+                     colorvar = "elec", sizevar = "squarefeet")
+
+# Plot the motion chart
+plot(motion, tag = "chart")
+
+#>
+
+#< hint
+display("Just click check to solve this task")
+#>
+```
+
+The chart present some of the results we inferred from the last regressions visually. You can see that the electricity consumption has a linear relationship with the size of the house. If you play around with the values for each axis you can see that the relationship is not as strong for the gas consumption as it is for the electricity consumption.
+
+You can also change not just the values on the axis of the plot, but the parameters for the sizing and coloring of the circles. Also, you can change the type of the entire plot.
+
+After completing the introduction to linear regression, we want to replicate some of the regression from the paper in the next exercise.
+
+
+## Exercise 5 -- Regressions from the Paper
+
+In this exercise I want to include some of the regressions from the paper. Both results are contained in Table 3 on p. 34 and Table 4 on p. 35. All the tasks are completely optional, but I encourage you to take a close look at the different models and their interpretation.
+
+First we need to load the data again and this time we will also create the dummy variables for our following regressions.
+
+**Task:** Load the dta-file `gg_new.dta` and save the data frame as `dat`. Create the dummy variables `year.month` and `zip.yearmonth`.
+
+To create the dummy variables use the `with()` command and the `interaction()` function. 
+
+```{r "5_"}
+#< task
+#load the foreign package and import the data file gg_new.dta as data
+library(foreign)
+dat = read.dta("gg_new.dta")
+
+#create a dummy variable year.month
+dat$year.month = with(dat,interaction(year,month))
+
+#create a dummy variable zip.yearmonth
+dat$zip.yearmonth = with(dat,interaction(zip,year.month))
+
+#printing the first 10 rows of the data frame
+head(dat)
+#>
+
+#< hint
+display("Just hit check to solve this task")
+#>
+```           
+
+If you scroll to the far right of the data frame you can see the newly generated variables `year.month` and `zip.yearmonth` which are our dummy variables.
+
+**Task:** To make the function call of `felm` easier we want to change some of the variables inside our data frame to factors similar to one of the first tasks in chapter 1.
+
+Create factors using the command `lapply` for the variables `x2001code`, `centralair`, `shingled`, `baths`, `beds`, `stories`, `zip` and the newly created dummy variables `year.month` plus `zip.yearmonth`.
+
+```{r "5__2"}
+#< task
+#saving the variables we want to convert to factors inside var
+var <- c("x2001code", "centralair", "shingled", "baths","beds","stories","zip","year.month","zip.yearmonth")
+
+#applying the function factor to the columns of the data frame dat
+#dat[...] = lapply(dat[...], factor)
+#>
+dat[var] = lapply(dat[var], factor)
+#< hint
+display("Just uncomment the last code line and replace the ... again.")
+#>
+```  
+
+
+#< info "felm()"
+
+`felm()` is used to fit linear models with multiple group fixed effects and similar to the standard function `lm()`. The function is especially useful for large data sets with multiple group fixed effects.
+
+The new formula specification of `felm()` does however look a bit different from what you are used to from `lm()`.
+
+The formula consists of the response variable e.g. `y` and four subsequent parts. In the first part you can use the ordinary covariates e.g. `x1` and `x2`. In the second part you can specify factors to be projected out. In the third part you can specify instrumental variables (IV) which are used for consistent estimations whenever the covariates are correlated with the error terms of the model. The last part is used to set cluster specifications for the standard errors.
+
+
+```{r "5__3",eval=FALSE}
+#Loading the lfe package
+library(lfe)
+
+#Run a regression of y on x1, x2 and a cluster on the variable clus1
+#The second and third part are specified with 0
+felm(y ~ x1 + x2 | 0 | 0 | clus1 )
+```
+
+If you want to know more about the `felm` function, you can take a look at the <a href="https://cran.r-project.org/web/packages/lfe/index.html" target = "_blank">lfe package page on r-project.org</a>.
+#>
+
+In the next task we want to replicate the regressions from Table 3 of the Paper **"Are Building Codes Effective at Saving Energy? Evidence from Residential Billing Data in Florida"** by using the `felm()` function from the popular `lfe` package.
+
+The linear regression model is of the following form:
+
+$$ Y_{it} = \delta~CodeChange_i + \beta~X_i + \nu_t + \epsilon_{it} $$
+
+where the dependent variable $Y_{it}$ is either the monthly electricity consumption in kWh or the monthly natural gas consumption in therms. $i$ indexes the residences and $t$ indexes the month-year of the billing data.
+
+$\delta$ is of primary interest as it captures the average change in energy consumption for houses built under the new building code identified by the indicator variable $CodeChange_i$.
+
+$\nu_t$ is the month-year specific intercepts that does control for month-to-month effects, such as the fluctuations in the weather or e.g. price changes of either gas or electricity.
+
+$X_i$ is a vector of explanatory variables and includes our set of specified variables and $\epsilon_{it}$ is our normally distributed error term.
+
+Take a look on p. 11 of the working paper if you want to learn more about the model specifications.
+
+
+**Task:** Run the regression of `elec` on `x2001code`, `logft`, `centralair`, `shingled`, `baths`, `beds`, `stories` and `zip` and save the results as `reg3.1`.
+
+Specify `year.month` as the factor to be projected out and use the `home_id` to cluster the standard error on each residence level.
+
+```{r "5__4"}
+#< task
+#load the lfe package
+library(lfe)
+
+#run the regression with felm
+reg3.1 = felm(elec ~ x2001code + logft + centralair + shingled + baths + beds + stories + zip | year.month | 0 | home_id, data = dat)
+
+#output the summary for the regression results
+summary(reg3.1)
+#>
+
+#< hint
+display("Just hit check to solve this task")
+#>
+```      
+
+#< award "Regression Lv. 3"
+  Great! You just ran your first regression with fixed effects and clustered standard errors!
+#>
+
+This is the first regression of Table 3, which is shown in the first column on page 34. We will create the last three regression of this table before we want to interpret the results.
+
+**Task:** Run the remaining regressions of Table 3. The models (2) and (4) also include the "Zip code x month-year dummies" we created in the first task of this exercise.
+
+```{r "5__5", results = 'asis'}
+#< task
+#run the remaining regressions with felm
+reg3.2 = felm(elec ~ x2001code + logft + centralair + shingled + baths + beds + stories + zip | year.month + zip.yearmonth | 0 | home_id, data = dat)
+
+reg3.3 = felm(gas ~ x2001code + logft + centralair + shingled + baths + beds + stories + zip | year.month | 0 | home_id, data = dat)
+
+reg3.4 = felm(gas ~ x2001code + logft + centralair + shingled + baths + beds + stories + zip | year.month + zip.yearmonth | 0 | home_id, data = dat)
+
+#load the package stargazer
+library(stargazer)
+
+#output the summary for the regression results with stargazer
+stargazer(reg3.1, reg3.2,reg3.3,reg3.4, type = "html",omit.stat = c("f","adj.rsq","ser"),
+omit = c("baths","beds","stories","zip","year.month"),model.names = TRUE,
+covariate.labels = c("Code Change", "ln(Square feet)", "Central air-conditioning","Shingled roof"),
+dep.var.labels  = c("Electricity","Natural gas"),notes.align = "l",
+notes.append = FALSE,notes.label = "",
+notes = "Standard errors are reported in parentheses and are clustered at the residence level. One, two, and three asterisks indicate significance at the p < 0.10, p < 0.05, and p < 0.01 level, respectively.",
+title="Table 3: Pre- and post-code-change comparisons for electricity",
+align=TRUE,add.lines = list(c("Bathroom dummies","Yes","Yes","Yes","Yes"),c("Bedroom dummies","Yes","Yes","Yes","Yes"),c("Stories dummies","Yes","Yes","Yes","Yes"),c("Zip code dummies","Yes","Yes","Yes","Yes"),c("Month-year dummies","Yes","Yes","Yes","Yes"),c("Zip code x month-year dummies","No","Yes","No","Yes")))
+#>
+
+#< hint
+display("Just hit check to solve this task")
+#>
+```      
+<br>
+
+Now you should see the results of all four regression models in one table similar to Table 3 of the paper. 
+
+We can see that roughly 50% of the variation in electricity consumption is explained by both models. The results are very clear and we see that the houses built after the code change consume about *48 kWh/month less* than the houses built before the energy code change. Both coefficient estimates are significant on the 95% level.
+
+When you compare the mean electricity consumption of 1,150 kWh/month from the summary statistic of Table 2 (data2 from Exercise 4.1) the newer houses consume *about 4% less* electricity per month. We can also see that the size of the house has a big impact on its energy consumption. Increasing the size of a house by only 10% which is roughly 207 square feet would lead to a 96 kWh/month (one-tenth of the effect from ln(squarefeet)) increase in electricity consumption on average.
+
+Taking a look at the consumption of natural gas reveals a similar picture. The houses constructed after the energy code change consume *1.5 therms/month less* on average compared to the houses built before the code change which is about 6.4% less. Again we can see that a 10% increase of the house size would lead to an increase of almost 3 therms/month on average.
+
+The model for the regression from the table 4 (see column 1 and 3) of the paper looks like:
+
+$$ Y_{it} = \beta[ACDD_t,AHDD_t] + \delta~CodeChange_i + Month_t + Year_t + \mu_i + \epsilon_{it} $$
+
+where $Month_t$ and $Year_t$ are the month and year dummies and $\mu_i$ stands for the residence-specific intercept.
+
+The model for column 2 and 4 has a similar specification, but includes month-year dummies instead of month and year dummies and is interested in the interaction of ACDD and AHDD with the building code:
+
+$$ Y_{it} = \delta~CodeChange_i * [ACDD_t,AHDD_t] + \nu_t + \epsilon_{it} $$
+
+**Task:** Run the remaining regressions of Table 4.
+
+```{r "5__6", results = 'asis'}
+#< task
+#run the remaining regressions with felm
+reg4.1 = felm(elec ~ factor(x2001code)*CDD + factor(x2001code)*HDD + CDD + HDD + factor(month) + factor(year) | home_id | 0 | home_id, data = dat)
+
+reg4.2 = felm(elec ~ factor(x2001code)*CDD + factor(x2001code)*HDD + factor(year.month) | home_id | 0 | home_id, data = dat)
+
+reg4.3 = felm(gas ~ factor(x2001code)*CDD + factor(x2001code)*HDD + CDD + HDD + factor(month) + factor(year) | home_id | 0 | home_id, data = dat)
+
+reg4.4 = felm(gas ~ factor(x2001code)*CDD + factor(x2001code)*HDD + factor(year.month) | home_id | 0 | home_id, data = dat)
+
+#output the summary for the regression results with stargazer
+stargazer(reg4.1,
+          reg4.2,
+          reg4.3,
+          reg4.4,
+          type = "html",
+          omit.stat = c("f","rsq","adj.rsq","ser"),
+          dep.var.labels  = c("Electricity","Natural gas"),
+          omit = c("month","year","year.month"),
+          model.names = TRUE,
+          covariate.labels = c("","ACDD", "AHDD","Code Change x ACDD","Code Change x AHDD"),
+          notes.align = "l",
+          notes.label = "",
+          notes = "Standard errors are reported in parentheses and are clustered at the residence level. One, two, and three asterisks indicate significance at the p < 0.10, p < 0.05, and p < 0.01 level, respectively.",title="Table 4: Difference-in-differences estimates for electricity and natural-gas consumption due to weather variability",
+          notes.append = FALSE,
+          add.lines = list(c("Month dummies","Yes","No","Yes","No"),c("Year dummies","Yes","No","Yes","No"),c("Month-year dummies","No","Yes","No","Yes"),c("Residence fixed-effects","Yes","Yes","Yes","Yes")),
+          align=TRUE)
+
+#>
+
+#< hint
+display("Just hit check to solve this task")
+#>
+```      
+<br>
+
+The results are consistent with our earlier findings and we can see in the first column that the interaction coefficient of the building code `x2001code` and ACDD represented by the variable `CDD` has the expected sign. This result means that a house built under the new energy code is less responsive to an increase of `CDD` compared to a house built before the code change. 
+
+This means that a house that was built after the 2001 code change needs about 2.5 kWh/month less electricity when ACDD increases by one degree Fahrenheit compared to a house built before the code change.
+
+In contrast, the houses built after the code change seem to be less efficient when it comes to electric heating. An increase of one unit in AHDD increases the electricity consumption by roughly 2.5 kWh/month. This marginal effect is not as important as the one regarding cooling, since the heating degree days are less frequent than the cooling degree days in Florida.
+
+Our results for the coefficients with the first model specification for the natural gas consumption in column three have also the expected signs. We can see that the post-code-change houses are less responsive to an increase of AHDD compared to the houses which were built before the code change. The marginal effect for an increase of one unit in AHDD is about -1.4 therms less per month.
+
+Overall the estimates for electricity and natural gas indicate that the energy consumption of post-code-change residences is less responsive to the weather-induced demand compared to the pre-code-change houses.
+
+The coefficient estimates are robust to the second model specification, where all the estimates are similar to our findings from the first model specification.
+
+## Exercise 6 -- Conclusion
+
+The goal of this problem set was to find out if energy codes are effective in saving energy. At the end of this problem set we want to reach a conclusion. 
+
+Many U.S. states began passing building energy codes in response to the oil embargo 1973. As policymakers attempt to pass energy codes on a federal level Grant D. Jacobsen and Matthew J. Kotchen set out to discover whether energy codes are an effective way to promote energy efficiency.
+
+The patterns of reduced consumption of electricity with a 4% decrease and of natural gas with a 6% decrease look consistent and suggest that the stringency of the new energy building codes are an effective way in saving energy. 
+
+Furthermore, a study of residential electricity consumption in California (Costa and Kahn, 2010) finds that starting from 1984, there is a monotonic negative relationship between the year built and the electricity consumption. The new energy efficiency standards for new constructions in California were introduced in 1978 and Figure 1 of the paper shows further decreases in electricity consumption after new building code legislation became effective.
+
+The authors mentioned several reasons that could have led to higher estimated effects compared to the engineering simulations:
+
+1.) Spillover effects in construction patterns across different regions. A general shift in construction practices could have led to more over-compliance in the northern climate region.
+
+2.) Possible confusion about the changes of the new energy code and the prescriptive requirements among home builders could also have led to more over-compliance.
+
+3.) New standards for energy-efficient refrigerators took effect in July 2001 which also could have led to a lower demand for electricity.
+
+It would be interesting for future research to study newer data and more cities in different climate regions to further investigate if energy codes are effective in decreasing the energy consumption. In particular colder climate regions are of interest to see if the findings of the Gainesville study in respect to a lower energy efficiency for colder months can be verified.
+
+Especially if the energy consumption decreases further after the start of Gainesville Green in 2008 due to the effects on the consumption behavior through peer comparison (Ayres et al., 2012). This can be a major motivation for some households to consume less energy.
+
+If you want to see all of your awards you collected during this problem set, you can edit the following code chunk and hit the check button.
+
+```{r "6_", results = 'asis'}
+#< task
+awards()
+#>
+
+#< hint
+display("Just hit check to solve this task")
+#>
+``` 
+
+## Exercise 7 -- References
+
+**Academic Papers and Books**
+
+* Aroonruengsawat, A., Auffhammer, M. and Sanstad, A.H. (2012) "The impact of state level building codes on residential electricity consumption", The Energy Journal, 33(1), pp. 31-52. doi: 10.5547/issn0195-6574-ej-vol33-no1-2.
+
+* Ayres, I., Raseman, S. and Shih, A. (2012) "Evidence from Two large field experiments that peer comparison feedback can reduce residential energy usage", Journal of Law, Economics, and Organization, 29(5), pp. 992-1022. doi: 10.1093/jleo/ews020.
+
+* Breusch, T.S. and Pagan, A.R. (1979) "A simple test for Heteroscedasticity and random coefficient variation", Econometrica, 47(5), pp. 1287-1294. doi: 10.2307/1911963.
+
+* Costa, D.L. and Kahn, M.E. (2010) "Why has California's residential electricity consumption been so flat since the 1980s? A Microeconometric approach" (No. w15978). Available at: http://www.nber.org/papers/w15978.
+
+* Jacobsen, G.D. and Kotchen, M.J. (2013) "Are building codes effective at saving energy? Evidence from residential billing data in Florida", Review of Economics and Statistics, 95(1), pp. 34-49. doi: 10.1162/rest_a_00243.
+
+* Koenker, R. (1981) "A note on studentizing a test for heteroscedasticity", Journal of Econometrics, 17(1), pp. 107-112. doi: 10.1016/0304-4076(81)90062-2.
+
+* Long, J.S. and Ervin, L.H. (2000) "Using Heteroscedasticity consistent standard errors in the linear regression model", The American Statistician, 54(3), pp. 217-224. doi: 10.2307/2685594.
+
+* Wooldridge, J.M. (2015) "Introductory econometrics: A modern approach". 6th edn. United States: CENGAGE Learning Custom Publishing.
+
+
+**R and R packages**
+  
+* Auguie, Baptiste. (2016). gridExtra: functions in Grid graphics. R package version 2.2.1. http://CRAN.R-project.org/package=gridExtra
+
+* Bache, Stefan Milton. (2014). magrittr: A Forward-Pipe Operator for R. R package version 1.5. https://cran.r-project.org/package=magrittr
+
+* Faraway, Julian. (2016). faraway: Functions and Datasets for Books by Julian Faraway. R package version 1.0.7. https://cran.r-project.org/package=faraway
+
+* Gesmann, Markus. (2017). googleVis: R Interface to Google Charts. R package version 0.6.2. https://cran.r-project.org/package=googleVis
+
+* Hlavac, Marek. (2015). stargazer: Well-Formatted Regression and Summary Statistics Tables. R package version 5.2. https://cran.r-project.org/package=stargazer
+
+* Kranz, Sebastian. (2016). regtools: Some tools for regressions and presentation of regressions results. R package version 0.2. https://github.com/skranz/regtools
+
+* Kranz, Sebatian. (2015). restorepoint: Debugging with Restore Points. R package version 0.1.7. https://cran.r-project.org/package=restorepoint
+
+* Kranz, Sebastian. (2015). RTutor: R problem sets with automatic test of solution and hints. R package version 2015.12.16. https://github.com/skranz/RTutor
+
+* R Core Team. (2016). foreign: Read Data Stored by Minitab, S, SAS, SPSS, Stata, Systat, Weka, dBase, .... R package version 0.8-67. http://CRAN.R-project.org/package=foreign
+  
+* R Core Team (2016). R: A language and environment for statistical computing. R Foundation
+for Statistical Computing, Vienna, Austria. URL https://www.R-project.org/ 
+  
+* Wickham, Hadley. (2009). ggplot2: Elegant Graphics for Data Analysis. Springer-Verlag New York.
+
+* Wickham, Hadley, & Romain Francois. (2016). dplyr: A Grammar of Data Manipulation. R package version 0.5.0. http://CRAN.R-project.org/package=dplyr
+
+* Wickham, Hadley. (2017). tidyr: Easily Tidy Data with 'spread()' and 'gather()' Functions. R package version 0.6.1. https://cran.r-project.org/package=tidyr
+
+* Zeileis, Achim. (2015). lmtest: Testing Linear Regression Models. R package version 0.9-34. https://cran.r-project.org/package=lmtest
+
+**Websites**
+
+* Bommae, K. (2015) "Understanding diagnostic plots for linear regression analysis". Available at: http://data.library.virginia.edu/diagnostic-plots/ (Accessed: 14 February 2017).
+
+* King, W.B. (2016) "Model Formulae". Available at: https://ww2.coastal.edu/kingw/statistics/R-tutorials/formulae.html (Accessed: 14 February 2017).
+
+* Hahn, R. (no date) "Statistical Formula Notation in R". Available at: http://faculty.chicagobooth.edu/richard.hahn/teaching/formulanotation.pdf (Accessed: 14 February 2017).
+
+* U.S. Energy Information Administration (2016) "How much energy is consumed in residential and commercial buildings in the United States?". Available at: http://www.eia.gov/tools/faqs/faq.cfm?id=86&t=1 (Accessed: 14 February 2017).
+
+### License
+
+Author: Simon Hertle  
+<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.
+
+

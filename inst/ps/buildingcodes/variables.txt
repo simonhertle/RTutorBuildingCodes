@@ -1,0 +1,19 @@
+orgvar | var | descr
+
+home_i | home_id | unique identification number for each house observed
+year | year |  billing year
+month | month | billing month
+elec | elec | energy consumption in kilowatt-hours (kWh)
+gas | gas | natural gas consumption in Therms 
+squarefeet | squarefeet | square footage of each house observed
+beds | beds | number of bedrooms
+baths | baths | number of bathrooms
+stories | stories | number of stories
+centralair | centralair | air-contioned house (centralair = 1)
+shingled | shingled | shingled roof type (shingled = 1)
+zip | zip | zip code where the house is located
+effectiveyearbuilt | effectiveyearbuilt | effective year built (EYB)
+CDD | CDD | cooling degree days represent the average difference from the standard reference point of 65 degrees Fahrenheit for each month
+HDD | HDD | heating degree days represent the average difference from the standard reference point of 65 degrees Fahrenheit for each month
+x2001code | x2001code | indicates if a house was built under the new building code regime (x2001code = 1)
+logft | logft | squarefeet logarithmized

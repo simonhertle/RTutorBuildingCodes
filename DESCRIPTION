@@ -1,0 +1,12 @@
+Package: RTutorBuildingCodes
+Type: Package
+Title: RTutor problem set buildingcodes
+Version: 0.1
+Date: 2017-20-02
+Author: Simon Hertle
+Maintainer: Simon Hertle <simon.herlte@uni-ulm.de>
+Description: RTutor problem set buildingcodes
+License: 
+	Problem set content: Creative Commons (CC 4.0 by-nc-sa)
+	Package code: GPL >= 2.0
+Depends: RTutor, ggplot2, dplyr, foreign, gridExtra, regtools, foreign, lfe, faraway, lmtest, googleVis, tidyr
